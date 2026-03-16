@@ -1,0 +1,58 @@
+@startuml petagenda_componentes
+left to right direction
+scale 1.6
+skinparam DefaultFontSize 18
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+
+
+skinparam rectangle {
+  BorderColor #3B4A6B
+  BackgroundColor #EAF2FF
+  FontColor #1F2D3D
+}
+
+
+skinparam arrow {
+  Color #5A6B8A
+}
+
+
+title Diagrama de Componentes - Aplicação Web PetAgenda
+
+
+package "Aplicação Web (Node.js + Express + EJS)" {
+
+
+component "Rotas\n\nDefine endpoints\nda aplicação" as Rotas
+
+
+component "Controllers\n\nRecebem requisições\nHTTP e coordenam\na lógica" as Controllers
+
+
+component "Services\n\nRegras de negócio\ne validação de\nconflitos de horário" as Services
+
+
+component "Repositories\n\nAcesso aos dados\ndo sistema" as Repositories
+
+
+component "Views\n\nPáginas renderizadas\ncom EJS" as Views
+
+
+}
+
+
+database "Banco de Dados\n(SQLite)" as DB
+
+
+Rotas --> Controllers
+Controllers --> Services
+Controllers --> Views
+Services --> Repositories
+Repositories --> DB
+
+
+@enduml
+
