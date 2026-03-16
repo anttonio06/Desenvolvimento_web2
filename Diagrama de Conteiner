@@ -1,0 +1,51 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+skinparam rectangle {
+  RoundCorner 15
+  BorderColor #3B4A6B
+  BackgroundColor #EAF2FF
+  FontColor #1F2D3D
+}
+
+skinparam database {
+  BorderColor #3B4A6B
+  BackgroundColor #FFF4D6
+  FontColor #1F2D3D
+}
+
+skinparam actor {
+  BorderColor #3B4A6B
+  FontColor #1F2D3D
+}
+
+skinparam arrow {
+  Color #5A6B8A
+  FontColor #3B4A6B
+}
+
+title Diagrama de Containers - PetAgenda
+
+actor "Cliente" as Cliente
+actor "Atendente" as Atendente
+actor "Administrador" as Admin
+
+rectangle "PetAgenda" as Sistema {
+
+  rectangle "Aplicação Web\n(Node.js, Express, EJS)\n\nAutenticação, cadastro de clientes,\n pets, serviços e agendamentos" as WebApp
+
+  database "Banco de Dados\n(SQLite)\n\nArmazena usuários, clientes, pets,\n serviços e agendamentos" as DB
+}
+
+Cliente --> WebApp : Acessa
+Atendente --> WebApp : Acessa
+Admin --> WebApp : Acessa
+
+WebApp --> DB : Lê e grava dados
+
+@enduml
+
