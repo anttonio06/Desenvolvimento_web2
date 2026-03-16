@@ -1,0 +1,171 @@
+@startuml petagenda_codigo_10
+left to right direction
+skinparam backgroundColor white
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+
+skinparam package {
+  BorderColor #3B4A6B
+  FontColor #1F2D3D
+}
+
+
+skinparam class {
+  BackgroundColor #EAF2FF
+  BorderColor #3B4A6B
+  FontColor #1F2D3D
+}
+
+
+skinparam arrow {
+  Color #5A6B8A
+  FontColor #3B4A6B
+}
+
+
+title Diagrama de Código - PetAgenda
+
+
+package "Controllers" {
+  class AuthController
+  class ClienteController
+  class PetController
+  class ServicoController
+  class AgendamentoController
+}
+
+
+package "Services" {
+  class AuthService {
+    login()
+    logout()
+  }
+
+
+  class ClienteService {
+    cadastrarCliente()
+    editarCliente()
+    excluirCliente()
+    listarClientes()
+  }
+
+
+  class PetService {
+    cadastrarPet()
+    editarPet()
+    excluirPet()
+    listarPets()
+  }
+
+
+  class ServicoService {
+    cadastrarServico()
+    editarServico()
+    excluirServico()
+    listarServicos()
+  }
+
+
+  class AgendamentoService {
+    validarConflitoHorario()
+    criarAgendamento()
+    cancelarAgendamento()
+    reagendarAgendamento()
+    atualizarStatus()
+  }
+}
+
+
+package "Repositories" {
+  class UsuarioRepository
+  class ClienteRepository
+  class PetRepository
+  class ServicoRepository
+  class AgendamentoRepository
+}
+
+
+package "Entidades" {
+  class Usuario {
+    id
+    nome
+    email
+    senhaHash
+    perfil
+  }
+
+
+  class Cliente {
+    id
+    nome
+    telefone
+    email
+  }
+
+
+  class Pet {
+    id
+    nome
+    especie
+    raca
+    porte
+    observacoes
+  }
+
+
+  class Servico {
+    id
+    nome
+    preco
+    duracao_min
+    descricao
+  }
+
+
+  class Agendamento {
+    id
+    dataHora
+    status
+  }
+}
+
+
+AuthController --> AuthService
+ClienteController --> ClienteService
+PetController --> PetService
+ServicoController --> ServicoService
+AgendamentoController --> AgendamentoService
+
+
+AuthService --> UsuarioRepository
+ClienteService --> ClienteRepository
+PetService --> PetRepository
+ServicoService --> ServicoRepository
+AgendamentoService --> AgendamentoRepository
+
+
+UsuarioRepository --> Usuario
+ClienteRepository --> Cliente
+PetRepository --> Pet
+ServicoRepository --> Servico
+AgendamentoRepository --> Agendamento
+
+
+Cliente "1" -- "0..*" Pet
+Pet "1" -- "0..*" Agendamento
+Servico "1" -- "0..*" Agendamento
+
+
+note right of AgendamentoService
+Valida conflitos de horário
+antes de criar ou reagendar
+um atendimento.
+end note
+
+
+@enduml
+
