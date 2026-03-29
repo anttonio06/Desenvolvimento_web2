@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
+const db = require('./database/db');
+require('./database/init');
 
 const autenticacaoRoutes = require('./routes/autenticacao.routes');
 const clientesRoutes = require('./routes/clientes.routes');
@@ -51,9 +53,18 @@ app.get('/', (req, res) => {
 });
 
 app.get('/dashboard', verificarAutenticacao, (req, res) => {
-  res.render('dashboard/dashboard', {
-    usuario: req.session.usuario,
-    paginaAtiva: 'dashboard'
+  db.get('SELECT COUNT(*) AS total FROM clientes', [], (e1, r1) => {
+    db.get('SELECT COUNT(*) AS total FROM pets', [], (e2, r2) => {
+      db.all('SELECT nome, criado_em FROM clientes ORDER BY criado_em DESC LIMIT 3', [], (e3, ultimosClientes) => {
+        res.render('dashboard/dashboard', {
+          usuario: req.session.usuario,
+          paginaAtiva: 'dashboard',
+          totalClientes: (r1 && !e1) ? r1.total : 0,
+          totalPets: (r2 && !e2) ? r2.total : 0,
+          ultimosClientes: (ultimosClientes && !e3) ? ultimosClientes : []
+        });
+      });
+    });
   });
 });
 
