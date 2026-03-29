@@ -4,6 +4,10 @@ const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
 
 const autenticacaoRoutes = require('./routes/autenticacao.routes');
+const clientesRoutes = require('./routes/clientes.routes');
+const petsRoutes = require('./routes/pets.routes');
+const servicosRoutes = require('./routes/servicos.routes');
+const agendamentosRoutes = require('./routes/agendamentos.routes');
 const { verificarAutenticacao } = require('./middleware/controleLogin.middleware');
 
 const app = express();
@@ -37,19 +41,20 @@ app.use((req, res, next) => {
 });
 
 app.use('/', autenticacaoRoutes);
+app.use('/', clientesRoutes);
+app.use('/', petsRoutes);
+app.use('/', servicosRoutes);
+app.use('/', agendamentosRoutes);
 
 app.get('/', (req, res) => {
   res.redirect('/login');
 });
 
 app.get('/dashboard', verificarAutenticacao, (req, res) => {
-  res.send(`
-    <div style="font-family: Arial; padding: 30px;">
-      <h1>Bem-vindo, ${req.session.usuario.nome}!</h1>
-      <p>Login realizado com sucesso no PetAgenda.</p>
-      <a href="/logout">Sair</a>
-    </div>
-  `);
+  res.render('dashboard/dashboard', {
+    usuario: req.session.usuario,
+    paginaAtiva: 'dashboard'
+  });
 });
 
 app.listen(PORT, () => {

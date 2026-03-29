@@ -3,15 +3,12 @@
 
 title Diagrama de Contexto - PetAgenda
 
-Person(cliente, "Cliente", "Realiza login e consulta/agendamento de serviços para seu pet.")
 Person(atendente, "Atendente", "Gerencia clientes, pets, serviços e agendamentos.")
 Person(admin, "Administrador", "Administra o sistema e acompanha a operação do pet shop.")
 
 System(petagenda, "PetAgenda", "Sistema web de agendamento de serviços para pet shop.")
 
 System_Ext(notificacao, "Serviço de Notificação", "Serviço externo para envio de confirmações e avisos.")
-
-Rel_D(cliente, petagenda, "\nUtiliza o sistema")
 
 Rel(atendente, petagenda, "\nGerencia dados")
 

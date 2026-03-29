@@ -1,0 +1,39 @@
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="sidebar-brand-icon">🐾</span>
+    <span class="sidebar-brand-text">PetAgenda</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="nav-item <%= paginaAtiva === 'dashboard' ? 'active' : '' %>">
+      <i class="bi bi-grid-1x2-fill"></i> Dashboard
+    </a>
+    <a href="/clientes" class="nav-item <%= paginaAtiva === 'clientes' ? 'active' : '' %>">
+      <i class="bi bi-people-fill"></i> Clientes
+    </a>
+    <a href="/pets" class="nav-item <%= paginaAtiva === 'pets' ? 'active' : '' %>">
+      <i class="bi bi-heart-fill"></i> Pets
+    </a>
+    <a href="/servicos" class="nav-item <%= paginaAtiva === 'servicos' ? 'active' : '' %>">
+      <i class="bi bi-scissors"></i> Serviços
+    </a>
+    <a href="/agendamentos" class="nav-item <%= paginaAtiva === 'agendamentos' ? 'active' : '' %>">
+      <i class="bi bi-calendar2-week-fill"></i> Agendamentos
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar">
+        <i class="bi bi-person-fill"></i>
+      </div>
+      <div>
+        <div class="user-name"><%= usuario.nome %></div>
+        <div class="user-role"><%= usuario.permissoes %></div>
+      </div>
+    </div>
+    <a href="/logout" class="logout-btn">
+      <i class="bi bi-box-arrow-left"></i> Sair
+    </a>
+  </div>
+</aside>

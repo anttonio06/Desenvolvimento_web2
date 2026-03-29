@@ -1,58 +1,66 @@
-@startuml petagenda_componentes
-left to right direction
-scale 1.6
-skinparam DefaultFontSize 18
-skinparam backgroundColor white
-skinparam shadowing false
-skinparam defaultFontName Arial
-skinparam packageStyle rectangle
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
+title Diagrama de Componentes - Back-end do PetAgenda
 
-skinparam rectangle {
-  BorderColor #3B4A6B
-  BackgroundColor #EAF2FF
-  FontColor #1F2D3D
+LAYOUT_TOP_DOWN()
+
+Person(cliente, "Cliente", "Solicita e acompanha agendamentos de serviços para seu pet.")
+Person(atendente, "Atendente", "Gerencia clientes, pets e agendamentos no pet shop.")
+Person(admin, "Administrador", "Administra serviços, usuários e o funcionamento geral do sistema.")
+
+Container_Boundary(backend, "Aplicação Back-end - PetAgenda") {
+
+    Component(routes, "Rotas", "Express Router", "Define os endpoints e direciona as requisições para os controllers.")
+    
+    Component(authController, "Auth Controller", "Controller", "Controla login, logout e validação de sessão.")
+    Component(clienteController, "Cliente Controller", "Controller", "Gerencia cadastro, edição, listagem e exclusão de clientes.")
+    Component(petController, "Pet Controller", "Controller", "Gerencia cadastro, edição, listagem e exclusão de pets.")
+    Component(servicoController, "Serviço Controller", "Controller", "Gerencia cadastro, edição, listagem e exclusão de serviços.")
+    Component(agendamentoController, "Agendamento Controller", "Controller", "Controla criação, cancelamento, reagendamento e atualização de status dos agendamentos.")
+
+    Component(authService, "Auth Service", "Service", "Aplica autenticação, hash de senha e regras de acesso.")
+    Component(clienteService, "Cliente Service", "Service", "Aplica regras de negócio relacionadas aos clientes.")
+    Component(petService, "Pet Service", "Service", "Aplica regras de negócio relacionadas aos pets.")
+    Component(servicoService, "Serviço Service", "Service", "Aplica regras de negócio relacionadas aos serviços.")
+    Component(agendamentoService, "Agendamento Service", "Service", "Valida conflitos de horário, cria agendamentos e controla status.")
+    
+    Component(usuarioRepository, "Usuário Repository", "Repository", "Realiza operações de persistência dos usuários.")
+    Component(clienteRepository, "Cliente Repository", "Repository", "Realiza operações de persistência dos clientes.")
+    Component(petRepository, "Pet Repository", "Repository", "Realiza operações de persistência dos pets.")
+    Component(servicoRepository, "Serviço Repository", "Repository", "Realiza operações de persistência dos serviços.")
+    Component(agendamentoRepository, "Agendamento Repository", "Repository", "Realiza operações de persistência dos agendamentos.")
 }
 
+ContainerDb(db, "Banco de Dados", "SQLite", "Armazena usuários, clientes, pets, serviços e agendamentos.")
 
-skinparam arrow {
-  Color #5A6B8A
-}
+Rel(cliente, routes, "Acessa funcionalidades pelo sistema web")
+Rel(atendente, routes, "Acessa funcionalidades pelo sistema web")
+Rel(admin, routes, "Acessa funcionalidades pelo sistema web")
 
+Rel(routes, authController, "Encaminha requisições de autenticação")
+Rel(routes, clienteController, "Encaminha requisições de clientes")
+Rel(routes, petController, "Encaminha requisições de pets")
+Rel(routes, servicoController, "Encaminha requisições de serviços")
+Rel(routes, agendamentoController, "Encaminha requisições de agendamento")
 
-title Diagrama de Componentes - Aplicação Web PetAgenda
+Rel(authController, authService, "Usa")
+Rel(clienteController, clienteService, "")
+Rel(petController, petService, "")
+Rel(servicoController, servicoService, "")
+Rel(agendamentoController, agendamentoService, "")
 
+Rel(authService, usuarioRepository, "Usa")
+Rel(clienteService, clienteRepository, "")
+Rel(petService, petRepository, "")
+Rel(servicoService, servicoRepository, "")
+Rel(agendamentoService, agendamentoRepository, "")
 
-package "Aplicação Web (Node.js + Express + EJS)" {
+Rel(usuarioRepository, db, "Lê e grava", "SQL")
+Rel(clienteRepository, db, "", "")
+Rel(petRepository, db, "", "")
+Rel(servicoRepository, db, "", "")
+Rel(agendamentoRepository, db, "", "")
 
-
-component "Rotas\n\nDefine endpoints\nda aplicação" as Rotas
-
-
-component "Controllers\n\nRecebem requisições\nHTTP e coordenam\na lógica" as Controllers
-
-
-component "Services\n\nRegras de negócio\ne validação de\nconflitos de horário" as Services
-
-
-component "Repositories\n\nAcesso aos dados\ndo sistema" as Repositories
-
-
-component "Views\n\nPáginas renderizadas\ncom EJS" as Views
-
-
-}
-
-
-database "Banco de Dados\n(SQLite)" as DB
-
-
-Rotas --> Controllers
-Controllers --> Services
-Controllers --> Views
-Services --> Repositories
-Repositories --> DB
-
-
+SHOW_LEGEND()
 @enduml
-

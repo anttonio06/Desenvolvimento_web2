@@ -1,171 +1,81 @@
-@startuml petagenda_codigo_10
-left to right direction
-skinparam backgroundColor white
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title C4 Model - Level 4 Code - Agendamento do PetAgenda
+
+LAYOUT_TOP_DOWN()
 skinparam classAttributeIconSize 0
-skinparam shadowing false
-skinparam defaultFontName Arial
-skinparam packageStyle rectangle
-skinparam linetype ortho
 
+Container_Boundary(agendamento_component, "Componente: Agendamento") {
 
-skinparam package {
-  BorderColor #3B4A6B
-  FontColor #1F2D3D
+    class AgendamentoController {
+      +criarAgendamento(dados)
+      +cancelarAgendamento(id)
+      +reagendarAgendamento(id, novaDataHora)
+      +atualizarStatus(id, status)
+    }
+
+    class AgendamentoService {
+      +criar(dados)
+      +cancelar(id)
+      +reagendar(id, novaDataHora)
+      +atualizarStatus(id, status)
+      +validarConflito(dataHora, duracaoMin)
+    }
+
+    class AgendamentoRepository {
+      +salvar(agendamento)
+      +buscarPorId(id)
+      +buscarPorDataHora(dataHora)
+      +atualizar(agendamento)
+    }
+
+    class Agendamento {
+      -id : int
+      -cliente_id : int
+      -pet_id : int
+      -servico_id : int
+      -data_hora : String
+      -status : String
+      -observacoes : String
+    }
+
+    class Servico {
+      -id : int
+      -nome : String
+      -duracao_min : int
+      -preco : float
+      -descricao : String
+    }
+
+    class Pet {
+      -id : int
+      -cliente_id : int
+      -nome : String
+      -especie : String
+      -raca : String
+      -porte : String
+      -observacoes : String
+    }
+
+    class Cliente {
+      -id : int
+      -nome : String
+      -telefone : String
+      -email : String
+    }
 }
 
-
-skinparam class {
-  BackgroundColor #EAF2FF
-  BorderColor #3B4A6B
-  FontColor #1F2D3D
+class BancoDeDados <<database>> {
+  SQLite
 }
 
-
-skinparam arrow {
-  Color #5A6B8A
-  FontColor #3B4A6B
-}
-
-
-title Diagrama de Código - PetAgenda
-
-
-package "Controllers" {
-  class AuthController
-  class ClienteController
-  class PetController
-  class ServicoController
-  class AgendamentoController
-}
-
-
-package "Services" {
-  class AuthService {
-    login()
-    logout()
-  }
-
-
-  class ClienteService {
-    cadastrarCliente()
-    editarCliente()
-    excluirCliente()
-    listarClientes()
-  }
-
-
-  class PetService {
-    cadastrarPet()
-    editarPet()
-    excluirPet()
-    listarPets()
-  }
-
-
-  class ServicoService {
-    cadastrarServico()
-    editarServico()
-    excluirServico()
-    listarServicos()
-  }
-
-
-  class AgendamentoService {
-    validarConflitoHorario()
-    criarAgendamento()
-    cancelarAgendamento()
-    reagendarAgendamento()
-    atualizarStatus()
-  }
-}
-
-
-package "Repositories" {
-  class UsuarioRepository
-  class ClienteRepository
-  class PetRepository
-  class ServicoRepository
-  class AgendamentoRepository
-}
-
-
-package "Entidades" {
-  class Usuario {
-    id
-    nome
-    email
-    senhaHash
-    perfil
-  }
-
-
-  class Cliente {
-    id
-    nome
-    telefone
-    email
-  }
-
-
-  class Pet {
-    id
-    nome
-    especie
-    raca
-    porte
-    observacoes
-  }
-
-
-  class Servico {
-    id
-    nome
-    preco
-    duracao_min
-    descricao
-  }
-
-
-  class Agendamento {
-    id
-    dataHora
-    status
-  }
-}
-
-
-AuthController --> AuthService
-ClienteController --> ClienteService
-PetController --> PetService
-ServicoController --> ServicoService
-AgendamentoController --> AgendamentoService
-
-
-AuthService --> UsuarioRepository
-ClienteService --> ClienteRepository
-PetService --> PetRepository
-ServicoService --> ServicoRepository
-AgendamentoService --> AgendamentoRepository
-
-
-UsuarioRepository --> Usuario
-ClienteRepository --> Cliente
-PetRepository --> Pet
-ServicoRepository --> Servico
-AgendamentoRepository --> Agendamento
-
-
-Cliente "1" -- "0..*" Pet
-Pet "1" -- "0..*" Agendamento
-Servico "1" -- "0..*" Agendamento
-
-
-note right of AgendamentoService
-Valida conflitos de horário
-antes de criar ou reagendar
-um atendimento.
-end note
-
+AgendamentoController --> AgendamentoService : usa
+AgendamentoService --> AgendamentoRepository : usa
+AgendamentoService --> Servico : consulta
+AgendamentoService --> Pet : valida
+AgendamentoService --> Cliente : valida
+AgendamentoRepository --> Agendamento : persiste
+AgendamentoRepository --> BancoDeDados : SQL
 
 @enduml
-
