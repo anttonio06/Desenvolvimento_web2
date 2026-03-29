@@ -62,5 +62,4 @@ Rel(petRepository, db, "", "")
 Rel(servicoRepository, db, "", "")
 Rel(agendamentoRepository, db, "", "")
 
-SHOW_LEGEND()
 @enduml
