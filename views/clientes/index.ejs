@@ -15,20 +15,6 @@
 
   <main class="main-content">
 
-    <% if (erro === 'email_duplicado') { %>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      Este e-mail já está cadastrado para outro cliente.
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-    </div>
-    <% } %>
-    <% if (erro === 'telefone_duplicado') { %>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      Este telefone já está cadastrado para outro cliente.
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-    </div>
-    <% } %>
 
     <div class="page-header">
       <div>
@@ -89,36 +75,36 @@
   <!-- Modal Novo Cliente -->
   <div class="modal fade" id="modalNovoCliente" tabindex="-1" aria-labelledby="modalNovoClienteLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <form method="POST" action="/clientes">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalNovoClienteLabel"><i class="bi bi-person-plus-fill me-2"></i>Novo Cliente</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalNovoClienteLabel"><i class="bi bi-person-plus-fill me-2"></i>Novo Cliente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="novo-erro-telefone" class="alert alert-danger d-none">
+            Este telefone já está cadastrado para outro cliente.
           </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
-              <input type="text" name="nome" class="form-control" placeholder="Nome completo" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Telefone <span class="text-danger">*</span></label>
-              <input type="text" name="telefone" class="form-control" placeholder="(00) 00000-0000"
-                required pattern="\(?\d{2}\)?\s?\d{4,5}-?\d{4}"
-                title="Informe um telefone válido, ex: (11) 99999-9999">
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">E-mail <span class="text-danger">*</span></label>
-              <input type="email" name="email" class="form-control" placeholder="email@exemplo.com"
-                required pattern="[^\s@]+@[^\s@]+\.com"
-                title="O e-mail deve terminar com .com">
-            </div>
+          <div id="novo-erro-email" class="alert alert-danger d-none">
+            Este e-mail já está cadastrado para outro cliente.
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-success">Cadastrar</button>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
+            <input type="text" id="novo-nome" class="form-control" placeholder="Nome completo">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Telefone <span class="text-danger">*</span></label>
+            <input type="text" id="novo-telefone" class="form-control" placeholder="(00) 00000-0000">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">E-mail <span class="text-danger">*</span></label>
+            <input type="email" id="novo-email" class="form-control" placeholder="email@exemplo.com">
           </div>
         </div>
-      </form>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" onclick="cadastrarCliente()">Cadastrar</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -161,6 +147,45 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     var clienteEditandoId = null;
+
+    document.getElementById('modalNovoCliente').addEventListener('show.bs.modal', function() {
+      document.getElementById('novo-nome').value = '';
+      document.getElementById('novo-telefone').value = '';
+      document.getElementById('novo-email').value = '';
+      document.getElementById('novo-erro-telefone').classList.add('d-none');
+      document.getElementById('novo-erro-email').classList.add('d-none');
+    });
+
+    function cadastrarCliente() {
+      var nome = document.getElementById('novo-nome').value.trim();
+      var telefone = document.getElementById('novo-telefone').value.trim();
+      var email = document.getElementById('novo-email').value.trim();
+      var telPattern = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
+      var emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
+
+      document.getElementById('novo-erro-telefone').classList.add('d-none');
+      document.getElementById('novo-erro-email').classList.add('d-none');
+
+      if (!nome) { alert('Informe o nome do cliente.'); return; }
+      if (!telefone || !telPattern.test(telefone)) { alert('Informe um telefone válido, ex: (11) 99999-9999'); return; }
+      if (!email || !emailPattern.test(email)) { alert('Informe um e-mail válido terminando em .com'); return; }
+
+      fetch('/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: nome, telefone: telefone, email: email })
+      }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.ok) {
+          location.reload();
+        } else if (data.erro === 'telefone_duplicado') {
+          document.getElementById('novo-telefone').value = '';
+          document.getElementById('novo-erro-telefone').classList.remove('d-none');
+        } else if (data.erro === 'email_duplicado') {
+          document.getElementById('novo-email').value = '';
+          document.getElementById('novo-erro-email').classList.remove('d-none');
+        }
+      });
+    }
 
     document.getElementById('busca-cliente').addEventListener('input', function() {
       var termo = this.value.toLowerCase();

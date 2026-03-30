@@ -28,13 +28,13 @@ router.post('/clientes', verificarAutenticacao, (req, res) => {
   }
 
   db.get('SELECT id FROM clientes WHERE telefone = ?', [telValido], (err, rowTel) => {
-    if (rowTel) return res.redirect('/clientes?erro=telefone_duplicado');
+    if (rowTel) return res.json({ ok: false, erro: 'telefone_duplicado' });
     db.get('SELECT id FROM clientes WHERE email = ?', [emailValido], (err2, rowEmail) => {
-      if (rowEmail) return res.redirect('/clientes?erro=email_duplicado');
+      if (rowEmail) return res.json({ ok: false, erro: 'email_duplicado' });
       db.run(
         'INSERT INTO clientes (nome, telefone, email) VALUES (?, ?, ?)',
         [nome.trim(), telValido, emailValido],
-        () => res.redirect('/clientes')
+        (err3) => res.json({ ok: !err3 })
       );
     });
   });

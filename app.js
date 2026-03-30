@@ -55,13 +55,16 @@ app.get('/', (req, res) => {
 app.get('/dashboard', verificarAutenticacao, (req, res) => {
   db.get('SELECT COUNT(*) AS total FROM clientes', [], (e1, r1) => {
     db.get('SELECT COUNT(*) AS total FROM pets', [], (e2, r2) => {
-      db.all('SELECT nome, criado_em FROM clientes ORDER BY criado_em DESC LIMIT 3', [], (e3, ultimosClientes) => {
-        res.render('dashboard/dashboard', {
-          usuario: req.session.usuario,
-          paginaAtiva: 'dashboard',
-          totalClientes: (r1 && !e1) ? r1.total : 0,
-          totalPets: (r2 && !e2) ? r2.total : 0,
-          ultimosClientes: (ultimosClientes && !e3) ? ultimosClientes : []
+      db.get('SELECT COUNT(*) AS total FROM servicos', [], (e3, r3) => {
+        db.all('SELECT nome, criado_em FROM clientes ORDER BY criado_em DESC LIMIT 3', [], (e4, ultimosClientes) => {
+          res.render('dashboard/dashboard', {
+            usuario: req.session.usuario,
+            paginaAtiva: 'dashboard',
+            totalClientes: (r1 && !e1) ? r1.total : 0,
+            totalPets: (r2 && !e2) ? r2.total : 0,
+            totalServicos: (r3 && !e3) ? r3.total : 0,
+            ultimosClientes: (ultimosClientes && !e4) ? ultimosClientes : []
+          });
         });
       });
     });
