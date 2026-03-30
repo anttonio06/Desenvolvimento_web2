@@ -95,6 +95,8 @@ Pet (id, cliente_id, nome, especie, raca, porte, observacoes)
 Servico (id, nome, duracao_min, preco, descricao)
 Agendamento (id, cliente_id, pet_id, servico_id, data_hora, status, observacoes)
 ```
+## Diagramas de Arquitetura em Modelo C4
+
 <img width="474" height="640" alt="image" src="https://github.com/user-attachments/assets/f76152dc-1727-48e8-a95c-232bfc255bc9" />
 
 <img width="478" height="904" alt="image" src="https://github.com/user-attachments/assets/b4149b8c-e0fa-4135-80cb-324f0d6933db" />
