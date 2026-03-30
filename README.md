@@ -24,6 +24,9 @@ O sistema foi criado para **evitar conflitos de horários**, melhorar a organiza
 
 ---
 
+## Link Para o Figma
+https://www.figma.com/design/4812XawUkC89akWzElnj8Q/Projeto-Pet-Shop?t=X7kzn7t32UpVbS76-1
+
 ## Objetivo
 
 Desenvolver um sistema web com:
