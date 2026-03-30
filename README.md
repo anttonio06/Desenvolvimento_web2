@@ -101,5 +101,6 @@ Agendamento (id, cliente_id, pet_id, servico_id, data_hora, status, observacoes)
 
 <img width="717" height="903" alt="image" src="https://github.com/user-attachments/assets/3b4faa05-ca1e-4737-bed2-026b1b6cfdf1" />
 
-<img width="843" height="933" alt="image" src="https://github.com/user-attachments/assets/235d4f86-f185-4ccd-8f17-7bcecbdf9eec" />
+<img width="684" height="778" alt="image" src="https://github.com/user-attachments/assets/45983cde-d69a-4b25-9bed-561648b2d515" />
+
 
