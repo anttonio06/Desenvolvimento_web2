@@ -24,6 +24,9 @@ O sistema foi criado para **evitar conflitos de horários**, melhorar a organiza
 
 ---
 
+## Link Para o Figma
+https://www.figma.com/design/4812XawUkC89akWzElnj8Q/Projeto-Pet-Shop?t=X7kzn7t32UpVbS76-1
+
 ## Objetivo
 
 Desenvolver um sistema web com:
@@ -94,3 +97,15 @@ Cliente (id, nome, telefone, email)
 Pet (id, cliente_id, nome, especie, raca, porte, observacoes)
 Servico (id, nome, duracao_min, preco, descricao)
 Agendamento (id, cliente_id, pet_id, servico_id, data_hora, status, observacoes)
+```
+## Diagramas de Arquitetura em Modelo C4
+
+<img width="474" height="640" alt="image" src="https://github.com/user-attachments/assets/f76152dc-1727-48e8-a95c-232bfc255bc9" />
+
+<img width="478" height="904" alt="image" src="https://github.com/user-attachments/assets/b4149b8c-e0fa-4135-80cb-324f0d6933db" />
+
+<img width="717" height="903" alt="image" src="https://github.com/user-attachments/assets/3b4faa05-ca1e-4737-bed2-026b1b6cfdf1" />
+
+<img width="684" height="778" alt="image" src="https://github.com/user-attachments/assets/45983cde-d69a-4b25-9bed-561648b2d515" />
+
+
