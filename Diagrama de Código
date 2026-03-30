@@ -1,7 +1,7 @@
 @startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title C4 Model - Level 4 Code - Agendamento do PetAgenda
+title Nível 4: Diagrama de Código
 
 LAYOUT_TOP_DOWN()
 skinparam classAttributeIconSize 0

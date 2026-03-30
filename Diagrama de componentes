@@ -1,7 +1,7 @@
 @startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title Diagrama de Componentes - Back-end do PetAgenda
+title Nível 3: Diagrama de Componentes
 
 LAYOUT_TOP_DOWN()
 

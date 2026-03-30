@@ -1,7 +1,7 @@
 @startuml contexto_petagenda
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
-title Diagrama de Contexto - PetAgenda
+title Nível 1: Diagrama de Contexto
 
 Person(atendente, "Atendente", "Gerencia clientes, pets, serviços e agendamentos.")
 Person(admin, "Administrador", "Administra o sistema e acompanha a operação do pet shop.")
