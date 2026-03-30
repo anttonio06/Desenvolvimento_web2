@@ -80,7 +80,7 @@
               <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.88rem; padding: 8px 0; border-bottom: 1px solid #f0f0f0">
                 <span style="color:#1f2937; font-weight:500"><%= c.nome %></span>
                 <span style="color:#9ca3af">
-                  cadastrado em <%= new Date(c.criado_em).toLocaleDateString('pt-BR') %>
+                  cadastrado em <%= new Date(c.criado_em.replace(' ', 'T') + 'Z').toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %>
                 </span>
               </div>
             <% }) %>
