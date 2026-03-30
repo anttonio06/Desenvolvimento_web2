@@ -1,12 +1,6 @@
 # PetAgenda  
 ### Sistema Web de Agendamento para Pet Shop
 
-![Node.js](https://img.shields.io/badge/Node.js-18+-green)
-![Express](https://img.shields.io/badge/Express.js-Backend-black)
-![EJS](https://img.shields.io/badge/EJS-SSR-orange)
-![SQLite](https://img.shields.io/badge/SQLite-Database-blue)
-![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
-
 ---
 
 ## Integrantes
