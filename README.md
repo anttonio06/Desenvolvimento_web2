@@ -94,5 +94,5 @@ Cliente (id, nome, telefone, email)
 Pet (id, cliente_id, nome, especie, raca, porte, observacoes)
 Servico (id, nome, duracao_min, preco, descricao)
 Agendamento (id, cliente_id, pet_id, servico_id, data_hora, status, observacoes)
-
+```
 <img width="474" height="640" alt="image" src="https://github.com/user-attachments/assets/f76152dc-1727-48e8-a95c-232bfc255bc9" />
