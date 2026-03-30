@@ -15,6 +15,21 @@
 
   <main class="main-content">
 
+    <% if (erro === 'email_duplicado') { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      Este e-mail já está cadastrado para outro cliente.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    </div>
+    <% } %>
+    <% if (erro === 'telefone_duplicado') { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      Este telefone já está cadastrado para outro cliente.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    </div>
+    <% } %>
+
     <div class="page-header">
       <div>
         <div class="page-title"><i class="bi bi-people-fill"></i> Clientes</div>
@@ -52,13 +67,14 @@
               </td>
             </tr>
           <% } else { %>
-            <% clientes.forEach(function(c) { %>
+            <% clientes.forEach(function(c, i) { %>
               <tr>
-                <td><%= c.id %></td>
+                <td><%= i + 1 %></td>
                 <td><strong><%= c.nome %></strong></td>
                 <td><%= c.telefone || '-' %></td>
                 <td><%= c.email || '-' %></td>
                 <td class="acoes">
+                  <button class="btn-acao editar" title="Editar" onclick="abrirEditar(<%= JSON.stringify({id: c.id, nome: c.nome, telefone: c.telefone || '', email: c.email || ''}) %>)"><i class="bi bi-pencil-fill"></i></button>
                   <button class="btn-acao excluir" title="Excluir" onclick="excluir('/clientes/<%= c.id %>')"><i class="bi bi-trash-fill"></i></button>
                 </td>
               </tr>
@@ -85,12 +101,16 @@
               <input type="text" name="nome" class="form-control" placeholder="Nome completo" required>
             </div>
             <div class="mb-3">
-              <label class="form-label fw-semibold">Telefone</label>
-              <input type="text" name="telefone" class="form-control" placeholder="(00) 00000-0000">
+              <label class="form-label fw-semibold">Telefone <span class="text-danger">*</span></label>
+              <input type="text" name="telefone" class="form-control" placeholder="(00) 00000-0000"
+                required pattern="\(?\d{2}\)?\s?\d{4,5}-?\d{4}"
+                title="Informe um telefone válido, ex: (11) 99999-9999">
             </div>
             <div class="mb-3">
-              <label class="form-label fw-semibold">E-mail</label>
-              <input type="email" name="email" class="form-control" placeholder="email@exemplo.com">
+              <label class="form-label fw-semibold">E-mail <span class="text-danger">*</span></label>
+              <input type="email" name="email" class="form-control" placeholder="email@exemplo.com"
+                required pattern="[^\s@]+@[^\s@]+\.com"
+                title="O e-mail deve terminar com .com">
             </div>
           </div>
           <div class="modal-footer">
@@ -102,14 +122,94 @@
     </div>
   </div>
 
+  <!-- Modal Editar Cliente -->
+  <div class="modal fade" id="modalEditarCliente" tabindex="-1" aria-labelledby="modalEditarClienteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEditarClienteLabel"><i class="bi bi-pencil-fill me-2"></i>Editar Cliente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="edit-erro-telefone" class="alert alert-danger d-none">
+            Este telefone já está cadastrado para outro cliente.
+          </div>
+          <div id="edit-erro-email" class="alert alert-danger d-none">
+            Este e-mail já está cadastrado para outro cliente.
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
+            <input type="text" id="edit-nome" class="form-control" placeholder="Nome completo">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Telefone <span class="text-danger">*</span></label>
+            <input type="text" id="edit-telefone" class="form-control" placeholder="(00) 00000-0000">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">E-mail <span class="text-danger">*</span></label>
+            <input type="email" id="edit-email" class="form-control" placeholder="email@exemplo.com">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="salvarEdicao()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    var clienteEditandoId = null;
+
     document.getElementById('busca-cliente').addEventListener('input', function() {
       var termo = this.value.toLowerCase();
       document.querySelectorAll('#tabela-clientes tbody tr').forEach(function(tr) {
         tr.style.display = tr.textContent.toLowerCase().includes(termo) ? '' : 'none';
       });
     });
+
+    function abrirEditar(cliente) {
+      clienteEditandoId = cliente.id;
+      document.getElementById('edit-nome').value = cliente.nome;
+      document.getElementById('edit-telefone').value = cliente.telefone;
+      document.getElementById('edit-email').value = cliente.email;
+      document.getElementById('edit-erro-telefone').classList.add('d-none');
+      document.getElementById('edit-erro-email').classList.add('d-none');
+      new bootstrap.Modal(document.getElementById('modalEditarCliente')).show();
+    }
+
+    function salvarEdicao() {
+      var nome = document.getElementById('edit-nome').value.trim();
+      var telefone = document.getElementById('edit-telefone').value.trim();
+      var email = document.getElementById('edit-email').value.trim();
+      var telPattern = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
+      var emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
+
+      if (!nome) { alert('Informe o nome do cliente.'); return; }
+      if (!telefone || !telPattern.test(telefone)) { alert('Informe um telefone válido, ex: (11) 99999-9999'); return; }
+      if (!email || !emailPattern.test(email)) { alert('Informe um e-mail válido.'); return; }
+
+      document.getElementById('edit-erro-telefone').classList.add('d-none');
+      document.getElementById('edit-erro-email').classList.add('d-none');
+      fetch('/clientes/' + clienteEditandoId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: document.getElementById('edit-nome').value,
+          telefone: document.getElementById('edit-telefone').value,
+          email: document.getElementById('edit-email').value
+        })
+      }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.ok) {
+          location.reload();
+        } else if (data.erro === 'telefone_duplicado') {
+          document.getElementById('edit-erro-telefone').classList.remove('d-none');
+        } else if (data.erro === 'email_duplicado') {
+          document.getElementById('edit-erro-email').classList.remove('d-none');
+        }
+      });
+    }
 
     function excluir(url) {
       if (confirm('Deseja excluir este cliente?')) {

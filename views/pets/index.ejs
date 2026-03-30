@@ -54,15 +54,16 @@
               </td>
             </tr>
           <% } else { %>
-            <% pets.forEach(function(p) { %>
+            <% pets.forEach(function(p, i) { %>
               <tr>
-                <td><%= p.id %></td>
+                <td><%= i + 1 %></td>
                 <td><strong><%= p.nome %></strong></td>
                 <td><%= p.especie === 'cao' ? '🐶 Cão' : p.especie === 'gato' ? '🐱 Gato' : '🐾 ' + p.especie %></td>
                 <td><%= p.raca || '-' %></td>
                 <td><%= p.porte || '-' %></td>
                 <td><%= p.cliente_nome || '-' %></td>
                 <td class="acoes">
+                  <button class="btn-acao editar" title="Editar" onclick="abrirEditar(<%= JSON.stringify({id: p.id, nome: p.nome, especie: p.especie, raca: p.raca || '', porte: p.porte || '', cliente_id: p.cliente_id || ''}) %>)"><i class="bi bi-pencil-fill"></i></button>
                   <button class="btn-acao excluir" title="Excluir" onclick="excluir('/pets/<%= p.id %>')"><i class="bi bi-trash-fill"></i></button>
                 </td>
               </tr>
@@ -98,12 +99,12 @@
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label fw-semibold">Raça</label>
-              <input type="text" name="raca" class="form-control" placeholder="Ex: Labrador, Poodle...">
+              <label class="form-label fw-semibold">Raça <span class="text-danger">*</span></label>
+              <input type="text" name="raca" class="form-control" placeholder="Ex: Labrador, Poodle..." required>
             </div>
             <div class="mb-3">
-              <label class="form-label fw-semibold">Porte</label>
-              <select name="porte" class="form-select">
+              <label class="form-label fw-semibold">Porte <span class="text-danger">*</span></label>
+              <select name="porte" class="form-select" required>
                 <option value="">Selecione...</option>
                 <option value="Pequeno">Pequeno</option>
                 <option value="Médio">Médio</option>
@@ -111,9 +112,9 @@
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label fw-semibold">Tutor (Cliente)</label>
-              <select name="cliente_id" class="form-select">
-                <option value="">Sem tutor</option>
+              <label class="form-label fw-semibold">Tutor (Cliente) <span class="text-danger">*</span></label>
+              <select name="cliente_id" class="form-select" required>
+                <option value="">Selecione...</option>
                 <% clientes.forEach(function(c) { %>
                   <option value="<%= c.id %>"><%= c.nome %></option>
                 <% }) %>
@@ -129,14 +130,107 @@
     </div>
   </div>
 
+  <!-- Modal Editar Pet -->
+  <div class="modal fade" id="modalEditarPet" tabindex="-1" aria-labelledby="modalEditarPetLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEditarPetLabel"><i class="bi bi-pencil-fill me-2"></i>Editar Pet</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
+            <input type="text" id="edit-nome" class="form-control" placeholder="Nome do pet" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Espécie <span class="text-danger">*</span></label>
+            <select id="edit-especie" class="form-select" required>
+              <option value="">Selecione...</option>
+              <option value="cao">🐶 Cão</option>
+              <option value="gato">🐱 Gato</option>
+              <option value="outro">🐾 Outro</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Raça <span class="text-danger">*</span></label>
+            <input type="text" id="edit-raca" class="form-control" placeholder="Ex: Labrador, Poodle...">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Porte <span class="text-danger">*</span></label>
+            <select id="edit-porte" class="form-select">
+              <option value="">Selecione...</option>
+              <option value="Pequeno">Pequeno</option>
+              <option value="Médio">Médio</option>
+              <option value="Grande">Grande</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Tutor (Cliente) <span class="text-danger">*</span></label>
+            <select id="edit-cliente_id" class="form-select">
+              <option value="">Selecione...</option>
+              <% clientes.forEach(function(c) { %>
+                <option value="<%= c.id %>"><%= c.nome %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="salvarEdicao()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    var petEditandoId = null;
+
     document.getElementById('busca-pet').addEventListener('input', function() {
       var termo = this.value.toLowerCase();
       document.querySelectorAll('#tabela-pets tbody tr').forEach(function(tr) {
         tr.style.display = tr.textContent.toLowerCase().includes(termo) ? '' : 'none';
       });
     });
+
+    function abrirEditar(pet) {
+      petEditandoId = pet.id;
+      document.getElementById('edit-nome').value = pet.nome;
+      document.getElementById('edit-especie').value = pet.especie;
+      document.getElementById('edit-raca').value = pet.raca;
+      document.getElementById('edit-porte').value = pet.porte;
+      document.getElementById('edit-cliente_id').value = pet.cliente_id;
+      new bootstrap.Modal(document.getElementById('modalEditarPet')).show();
+    }
+
+    function salvarEdicao() {
+      var nome = document.getElementById('edit-nome').value.trim();
+      var especie = document.getElementById('edit-especie').value;
+      var raca = document.getElementById('edit-raca').value.trim();
+      var porte = document.getElementById('edit-porte').value;
+      var cliente_id = document.getElementById('edit-cliente_id').value;
+
+      if (!nome) { alert('Informe o nome do pet.'); return; }
+      if (!especie) { alert('Selecione a espécie.'); return; }
+      if (!raca) { alert('Informe a raça do pet.'); return; }
+      if (!porte) { alert('Selecione o porte.'); return; }
+      if (!cliente_id) { alert('Selecione o tutor.'); return; }
+
+      fetch('/pets/' + petEditandoId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: document.getElementById('edit-nome').value,
+          especie: document.getElementById('edit-especie').value,
+          raca: document.getElementById('edit-raca').value,
+          porte: document.getElementById('edit-porte').value,
+          cliente_id: document.getElementById('edit-cliente_id').value
+        })
+      }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.ok) location.reload();
+      });
+    }
 
     function excluir(url) {
       if (confirm('Deseja excluir este pet?')) {

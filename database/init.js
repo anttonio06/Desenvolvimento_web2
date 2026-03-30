@@ -45,6 +45,10 @@ db.serialize(async () => {
     )
   `);
 
+  // Índices únicos para email e telefone de clientes (ignora erro se já houver duplicatas)
+  db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_clientes_email ON clientes(email) WHERE email IS NOT NULL AND email != ''`, () => {});
+  db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_clientes_telefone ON clientes(telefone) WHERE telefone IS NOT NULL AND telefone != ''`, () => {});
+
   // Migração para bancos existentes (ignora erro se coluna já existe)
   db.run(`ALTER TABLE servicos ADD COLUMN preco_pequeno REAL DEFAULT 0`, () => {});
   db.run(`ALTER TABLE servicos ADD COLUMN preco_medio REAL DEFAULT 0`, () => {});

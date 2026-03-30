@@ -24,7 +24,7 @@ router.get('/pets', verificarAutenticacao, (req, res) => {
 
 router.post('/pets', verificarAutenticacao, (req, res) => {
   const { nome, especie, raca, porte, cliente_id } = req.body;
-  if (!nome || !nome.trim() || !especie) {
+  if (!nome || !nome.trim() || !especie || !raca || !porte || !cliente_id) {
     return res.redirect('/pets');
   }
   db.run(
@@ -33,6 +33,18 @@ router.post('/pets', verificarAutenticacao, (req, res) => {
     (err) => {
       res.redirect('/pets');
     }
+  );
+});
+
+router.put('/pets/:id', verificarAutenticacao, (req, res) => {
+  const { nome, especie, raca, porte, cliente_id } = req.body;
+  if (!nome || !nome.trim() || !especie || !raca || !porte || !cliente_id) {
+    return res.json({ ok: false, erro: 'Campos obrigatórios faltando' });
+  }
+  db.run(
+    'UPDATE pets SET nome = ?, especie = ?, raca = ?, porte = ?, cliente_id = ? WHERE id = ?',
+    [nome.trim(), especie, raca || null, porte || null, cliente_id || null, req.params.id],
+    (err) => res.json({ ok: !err })
   );
 });
 
