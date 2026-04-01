@@ -9,34 +9,65 @@
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="/css/pages.css">
   <style>
+    .tabela-servicos {
+      width: 100%;
+    }
+    .tabela-servicos thead th {
+      white-space: nowrap;
+      text-align: center;
+    }
+    .tabela-servicos thead th:first-child {
+      text-align: left;
+    }
+    .tabela-servicos tbody tr {
+      height: 54px;
+    }
+    .tabela-servicos tbody td {
+      vertical-align: middle;
+      text-align: center;
+      padding: 0 16px;
+    }
+    .tabela-servicos tbody td:first-child {
+      text-align: left;
+    }
+    /* Corrige o display:flex do .acoes que quebra o vertical-align */
+    .tabela-servicos tbody td.acoes {
+      display: table-cell;
+      vertical-align: middle;
+      text-align: center;
+    }
+    .tabela-servicos tbody td.acoes .btn-acao {
+      display: inline-flex;
+      vertical-align: middle;
+    }
     .tabela-servicos input[type="number"] {
-      width: 90px;
+      width: 80px;
       padding: 4px 8px;
-      border: 1px solid #d1d5db;
+      border: 1px solid transparent;
       border-radius: 6px;
-      font-size: 0.9rem;
-      background: #f9fafb;
-      color: #374151;
-      text-align: right;
+      font-size: 0.875rem;
+      background: transparent;
+      color: #e0e0e0;
+      text-align: center;
+      vertical-align: middle;
     }
     .tabela-servicos input[type="number"]:disabled {
       background: transparent;
       border-color: transparent;
-      color: #374151;
+      color: #e0e0e0;
       cursor: default;
     }
     .tabela-servicos input[type="number"]:not(:disabled) {
-      background: #fff;
-      border-color: #6366f1;
+      background: #0d1421;
+      border-color: #10b981;
       outline: none;
-    }
-    .tabela-servicos td {
-      vertical-align: middle;
+      color: #f0f0f0;
+      width: 90px;
     }
     .badge-porte {
       font-size: 0.75rem;
       font-weight: 600;
-      color: #6b7280;
+      color: #888888;
       display: block;
       margin-bottom: 2px;
     }
@@ -68,37 +99,37 @@
         <thead>
           <tr>
             <th>Serviço</th>
-            <th style="text-align:center">Duração (min)</th>
-            <th style="text-align:center"><i class="bi bi-tag-fill" style="color:#22c55e"></i> Pequeno (R$)</th>
-            <th style="text-align:center"><i class="bi bi-tag-fill" style="color:#f59e0b"></i> Médio (R$)</th>
-            <th style="text-align:center"><i class="bi bi-tag-fill" style="color:#ef4444"></i> Grande (R$)</th>
-            <th style="text-align:center">Ações</th>
+            <th>Duração (min)</th>
+            <th><i class="bi bi-tag-fill" style="color:#22c55e"></i> Pequeno (R$)</th>
+            <th><i class="bi bi-tag-fill" style="color:#f59e0b"></i> Médio (R$)</th>
+            <th><i class="bi bi-tag-fill" style="color:#ef4444"></i> Grande (R$)</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
           <% servicos.forEach(function(s) { %>
             <tr id="row-<%= s.id %>">
               <td><strong><%= s.nome %></strong></td>
-              <td style="text-align:center">
+              <td>
                 <input type="number" min="1" value="<%= s.duracao_min || 60 %>" disabled data-campo="duracao_min">
               </td>
-              <td style="text-align:center">
+              <td>
                 <input type="number" min="0" step="0.01" value="<%= Number(s.preco_pequeno || 0).toFixed(2) %>" disabled data-campo="preco_pequeno">
               </td>
-              <td style="text-align:center">
+              <td>
                 <input type="number" min="0" step="0.01" value="<%= Number(s.preco_medio || 0).toFixed(2) %>" disabled data-campo="preco_medio">
               </td>
-              <td style="text-align:center">
+              <td>
                 <input type="number" min="0" step="0.01" value="<%= Number(s.preco_grande || 0).toFixed(2) %>" disabled data-campo="preco_grande">
               </td>
-              <td class="acoes" style="text-align:center">
+              <td class="acoes">
                 <button class="btn-acao editar btn-editar-<%= s.id %>" title="Editar" onclick="editarServico(<%= s.id %>)">
                   <i class="bi bi-pencil-fill"></i>
                 </button>
-                <button class="btn-acao salvar btn-salvar btn-salvar-<%= s.id %>" title="Salvar" onclick="salvarServico(<%= s.id %>)" style="background:#198f73; color:#fff; display:none; padding:6px 14px; gap:6px">
+                <button class="btn-acao salvar btn-salvar btn-salvar-<%= s.id %>" title="Salvar" onclick="salvarServico(<%= s.id %>)" style="background:#10b981; color:#fff; display:none; padding:6px 14px; gap:6px">
                   <i class="bi bi-check-lg"></i>
                 </button>
-                <button class="btn-acao btn-cancelar btn-cancelar-<%= s.id %>" title="Cancelar" onclick="cancelarEdicao(<%= s.id %>)" style="background:#6b7280; color:#fff; display:none">
+                <button class="btn-acao btn-cancelar btn-cancelar-<%= s.id %>" title="Cancelar" onclick="cancelarEdicao(<%= s.id %>)" style="background:#3a3a3a; color:#aaaaaa; display:none">
                   <i class="bi bi-x-lg"></i>
                 </button>
               </td>
@@ -109,7 +140,7 @@
     </div>
     <% } %>
 
-    <div id="toast-sucesso" style="display:none; position:fixed; bottom:24px; right:24px; background:#198f73; color:#fff; padding:12px 22px; border-radius:10px; font-weight:600; z-index:9999; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+    <div id="toast-sucesso" style="display:none; position:fixed; bottom:24px; right:24px; background:#10b981; color:#fff; padding:12px 22px; border-radius:10px; font-weight:600; z-index:9999; box-shadow:0 4px 16px rgba(16,185,129,0.3);">
       <i class="bi bi-check-circle-fill"></i> A alteração foi realizada!
     </div>
     <div id="toast-erro" style="display:none; position:fixed; bottom:24px; right:24px; background:#ef4444; color:#fff; padding:12px 22px; border-radius:10px; font-weight:600; z-index:9999; box-shadow:0 4px 16px rgba(0,0,0,0.15);">

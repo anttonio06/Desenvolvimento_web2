@@ -77,16 +77,16 @@
         <% } else { %>
           <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px">
             <% ultimosClientes.forEach(function(c) { %>
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.88rem; padding: 8px 0; border-bottom: 1px solid #f0f0f0">
-                <span style="color:#1f2937; font-weight:500"><%= c.nome %></span>
-                <span style="color:#9ca3af">
-                  cadastrado em <%= new Date(c.criado_em.replace(' ', 'T') + 'Z').toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04)">
+                <span class="nome-destaque"><%= c.nome %></span>
+                <span style="font-size:0.72rem; color:#4a4a62">
+                  <%= new Date(c.criado_em.replace(' ', 'T') + 'Z').toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %>
                 </span>
               </div>
             <% }) %>
           </div>
           <div style="margin-top:14px">
-            <a href="/clientes" style="font-size:0.82rem; color:#198f73; text-decoration:none">Ver todos os clientes &rarr;</a>
+            <a href="/clientes" style="font-size:0.82rem; color:#6b9bf5; text-decoration:none">Ver todos os clientes &rarr;</a>
           </div>
         <% } %>
       </div>
