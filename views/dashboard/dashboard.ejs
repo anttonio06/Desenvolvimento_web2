@@ -79,7 +79,7 @@
             <% ultimosClientes.forEach(function(c) { %>
               <div style="display:flex; justify-content:space-between; align-items:center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04)">
                 <span class="nome-destaque"><%= c.nome %></span>
-                <span style="font-size:0.72rem; color:#4a4a62">
+                <span style="font-size:0.72rem; color:#94a3b8">
                   <%= new Date(c.criado_em.replace(' ', 'T') + 'Z').toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %>
                 </span>
               </div>

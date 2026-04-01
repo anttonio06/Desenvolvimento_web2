@@ -36,7 +36,7 @@ body {
   width: 100%;
   max-width: 390px;
   margin: 0 auto;
-  padding: 44px 32px;
+  padding: 64px 32px 44px;
 }
 
 .brand {
@@ -68,7 +68,7 @@ body {
   color: #374151;
   font-size: 0.8rem;
   line-height: 1.55;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 
 .form-label {
@@ -132,7 +132,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 44px 36px;
+  padding: 80px 36px 44px;
   position: relative;
   overflow: hidden;
 }
@@ -164,17 +164,18 @@ body {
 }
 
 .illustration-icon {
-  font-size: 2.4rem;
-  margin-bottom: 16px;
   display: block;
+  margin-bottom: 18px;
 }
 
 .illustration-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #f9fafb;
-  margin-bottom: 8px;
-  letter-spacing: -0.03em;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin-top: -60px;
+  margin-bottom: 10px;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
 
 .illustration-desc {
@@ -190,7 +191,7 @@ body {
 .illustration-features {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 11px;
   text-align: left;
 }
 

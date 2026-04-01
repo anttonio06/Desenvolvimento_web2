@@ -15,10 +15,25 @@
   <main class="login-page d-flex align-items-center justify-content-center">
     <div class="login-card shadow-lg">
       <div class="row g-0 h-100">
-        <div class="col-lg-7 col-md-7 col-12 form-side">
+        <div class="col-lg-7 col-md-7 col-12 form-side" style="position:relative">
           <div class="form-wrapper">
+            <a href="/login" style="position:absolute; top:10px; left:10px; display:inline-flex; align-items:center; gap:5px; color:#64748b; font-size:0.78rem; text-decoration:none; border:none; padding:5px 12px; border-radius:7px; transition:color 0.18s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#64748b'">
+              <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+
             <div class="brand mb-4">
-              <span class="brand-icon">🐾</span>
+              <svg class="brand-icon" width="24" height="18" viewBox="0 0 130 100" fill="#10b981" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="16" cy="38" rx="6" ry="8"/>
+                <ellipse cx="27" cy="32" rx="6" ry="8"/>
+                <ellipse cx="38" cy="32" rx="6" ry="8"/>
+                <ellipse cx="49" cy="38" rx="6" ry="8"/>
+                <path d="M32 48 C17 48 9 59 13 70 C16 79 24 85 32 85 C40 85 48 79 51 70 C55 59 47 48 32 48Z"/>
+                <ellipse cx="80" cy="12" rx="5.5" ry="7.5"/>
+                <ellipse cx="91" cy="6" rx="5.5" ry="7.5"/>
+                <ellipse cx="102" cy="6" rx="5.5" ry="7.5"/>
+                <ellipse cx="113" cy="12" rx="5.5" ry="7.5"/>
+                <path d="M96 22 C82 22 74 33 78 43 C81 52 89 57 96 57 C103 57 111 52 114 43 C118 33 110 22 96 22Z"/>
+              </svg>
               <span class="brand-text">PetAgenda</span>
             </div>
 
@@ -35,7 +50,7 @@
               <div class="alert alert-success py-2"><%= sucesso %></div>
             <% } %>
 
-            <form action="/esqueci-senha" method="POST" class="mt-4">
+            <form action="/esqueci-senha" method="POST" class="mt-1">
               <div class="mb-3">
                 <label for="email" class="form-label">Email:</label>
                 <input
@@ -52,8 +67,8 @@
                 Enviar
               </button>
 
-              <div class="mt-3 text-center">
-                <span class="text-muted small">Não possui cadastro?</span>
+              <div class="mt-3 d-flex align-items-center justify-content-center gap-2">
+                <span style="color:#64748b; font-size:0.78rem">Não possui cadastro?</span>
                 <a href="/cadastro" class="small-link">Cadastre-se</a>
               </div>
             </form>
