@@ -17,7 +17,7 @@
       text-align: center;
     }
     .tabela-servicos thead th:first-child {
-      text-align: left;
+      text-align: center;
     }
     .tabela-servicos tbody tr {
       height: 54px;
@@ -28,7 +28,7 @@
       padding: 0 16px;
     }
     .tabela-servicos tbody td:first-child {
-      text-align: left;
+      text-align: center;
     }
     /* Corrige o display:flex do .acoes que quebra o vertical-align */
     .tabela-servicos tbody td.acoes {
@@ -96,10 +96,16 @@
     <% } else { %>
     <div class="section-card">
       <table class="table-agendamentos tabela-servicos" id="tabela-servicos">
+        <colgroup>
+          <col style="width:22%">
+          <col style="width:22%">
+          <col style="width:22%">
+          <col style="width:22%">
+          <col style="width:12%">
+        </colgroup>
         <thead>
           <tr>
             <th>Serviço</th>
-            <th>Duração (min)</th>
             <th><i class="bi bi-tag-fill" style="color:#22c55e"></i> Pequeno (R$)</th>
             <th><i class="bi bi-tag-fill" style="color:#f59e0b"></i> Médio (R$)</th>
             <th><i class="bi bi-tag-fill" style="color:#ef4444"></i> Grande (R$)</th>
@@ -110,9 +116,6 @@
           <% servicos.forEach(function(s) { %>
             <tr id="row-<%= s.id %>">
               <td><strong><%= s.nome %></strong></td>
-              <td>
-                <input type="number" min="1" value="<%= s.duracao_min || 60 %>" disabled data-campo="duracao_min">
-              </td>
               <td>
                 <input type="number" min="0" step="0.01" value="<%= Number(s.preco_pequeno || 0).toFixed(2) %>" disabled data-campo="preco_pequeno">
               </td>
