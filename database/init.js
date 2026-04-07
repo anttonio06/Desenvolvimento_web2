@@ -54,6 +54,23 @@ db.serialize(async () => {
   db.run(`ALTER TABLE servicos ADD COLUMN preco_medio REAL DEFAULT 0`, () => {});
   db.run(`ALTER TABLE servicos ADD COLUMN preco_grande REAL DEFAULT 0`, () => {});
 
+  // Migração agendamentos
+  db.run(`ALTER TABLE agendamentos ADD COLUMN observacoes TEXT`, () => {});
+  db.run(`ALTER TABLE agendamentos ADD COLUMN valor REAL`, () => {});
+  db.run(`ALTER TABLE agendamentos ADD COLUMN desconto REAL DEFAULT 0`, () => {});
+
+  // Tabela de serviços por agendamento (múltiplos serviços)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS agendamento_servicos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      agendamento_id INTEGER NOT NULL,
+      servico_id INTEGER NOT NULL,
+      valor REAL DEFAULT 0,
+      FOREIGN KEY (agendamento_id) REFERENCES agendamentos(id) ON DELETE CASCADE,
+      FOREIGN KEY (servico_id) REFERENCES servicos(id)
+    )
+  `);
+
   const servicosPadrao = [
     { nome: 'Banho', duracao_min: 60, preco_pequeno: 30, preco_medio: 45, preco_grande: 60 },
     { nome: 'Tosa', duracao_min: 90, preco_pequeno: 40, preco_medio: 55, preco_grande: 70 },

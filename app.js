@@ -56,14 +56,28 @@ app.get('/dashboard', verificarAutenticacao, (req, res) => {
   db.get('SELECT COUNT(*) AS total FROM clientes', [], (e1, r1) => {
     db.get('SELECT COUNT(*) AS total FROM pets', [], (e2, r2) => {
       db.get('SELECT COUNT(*) AS total FROM servicos', [], (e3, r3) => {
-        db.all('SELECT nome, criado_em FROM clientes ORDER BY criado_em DESC LIMIT 3', [], (e4, ultimosClientes) => {
-          res.render('dashboard/dashboard', {
-            usuario: req.session.usuario,
-            paginaAtiva: 'dashboard',
-            totalClientes: (r1 && !e1) ? r1.total : 0,
-            totalPets: (r2 && !e2) ? r2.total : 0,
-            totalServicos: (r3 && !e3) ? r3.total : 0,
-            ultimosClientes: (ultimosClientes && !e4) ? ultimosClientes : []
+        db.all('SELECT nome, criado_em FROM clientes ORDER BY criado_em DESC', [], (e4, ultimosClientes) => {
+          db.all(`
+            SELECT a.id, a.data_hora, a.status,
+                   p.nome AS pet_nome,
+                   s.nome AS servico_nome
+            FROM agendamentos a
+            LEFT JOIN pets p ON a.pet_id = p.id
+            LEFT JOIN servicos s ON a.servico_id = s.id
+            ORDER BY a.data_hora ASC
+          `, [], (e5, agendamentos) => {
+            const hoje = new Date().toISOString().split('T')[0];
+            const totalHoje = (agendamentos || []).filter(a => a.data_hora && a.data_hora.startsWith(hoje)).length;
+            res.render('dashboard/dashboard', {
+              usuario: req.session.usuario,
+              paginaAtiva: 'dashboard',
+              totalClientes: (r1 && !e1) ? r1.total : 0,
+              totalPets: (r2 && !e2) ? r2.total : 0,
+              totalServicos: (r3 && !e3) ? r3.total : 0,
+              ultimosClientes: (ultimosClientes && !e4) ? ultimosClientes : [],
+              agendamentos: (agendamentos && !e5) ? agendamentos : [],
+              totalHoje
+            });
           });
         });
       });

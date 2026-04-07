@@ -20,7 +20,7 @@
         <div class="page-title"><i class="bi bi-calendar2-week-fill"></i> Agendamentos</div>
         <div class="page-subtitle">Gerencie todos os agendamentos</div>
       </div>
-      <button class="btn-primary-action">
+      <button class="btn-primary-action" onclick="window.location.href='/agendamentos/novo'">
         <i class="bi bi-plus-lg"></i> Novo Agendamento
       </button>
     </div>
@@ -43,11 +43,11 @@
       <table class="table-agendamentos" id="tabela-agendamentos">
         <thead>
           <tr>
-            <th>#</th>
             <th>Data / Hora</th>
             <th>Cliente</th>
             <th>Pet</th>
             <th>Serviço</th>
+            <th>Valor</th>
             <th>Status</th>
             <th>Ações</th>
           </tr>
@@ -65,11 +65,11 @@
           <% } else { %>
             <% agendamentos.forEach(function(a) { %>
               <tr data-status="<%= a.status %>">
-                <td><%= a.id %></td>
                 <td><strong><%= new Date(a.data_hora).toLocaleDateString('pt-BR') %></strong><br><small style="color:#4a4a62; font-size:0.72rem"><%= new Date(a.data_hora).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) %></small></td>
                 <td><%= a.cliente_nome %></td>
                 <td><%= a.pet_nome %></td>
-                <td><%= a.servico_nome %></td>
+                <td><%= a.servicos_nomes || a.servico_nome || '—' %></td>
+                <td><%= a.valor ? 'R$ ' + Number(a.valor).toFixed(2).replace('.', ',') : '—' %></td>
                 <td>
                   <% if (a.status === 'confirmado') { %><span class="badge-status badge-confirmado">Confirmado</span>
                   <% } else if (a.status === 'pendente') { %><span class="badge-status badge-pendente">Pendente</span>
@@ -78,7 +78,7 @@
                   <% } %>
                 </td>
                 <td class="acoes">
-                  <a href="/agendamentos/<%= a.id %>" class="btn-acao editar" title="Editar"><i class="bi bi-pencil-fill"></i></a>
+                  <a href="/agendamentos/<%= a.id %>/editar" class="btn-acao editar" title="Editar"><i class="bi bi-pencil-fill"></i></a>
                   <button class="btn-acao excluir" title="Excluir" onclick="excluir('/agendamentos/<%= a.id %>')"><i class="bi bi-trash-fill"></i></button>
                 </td>
               </tr>
