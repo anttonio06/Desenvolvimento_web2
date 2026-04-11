@@ -87,6 +87,9 @@
           <div id="novo-erro-email" class="alert alert-danger d-none">
             Este e-mail já está cadastrado para outro cliente.
           </div>
+          <div id="novo-erro-email-formato" class="alert alert-danger d-none">
+            Informe um e-mail válido (ex: nome@exemplo.com ou nome@exemplo.com.br).
+          </div>
           <div class="mb-3">
             <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
             <input type="text" id="novo-nome" class="form-control" placeholder="Nome completo">
@@ -123,6 +126,9 @@
           <div id="edit-erro-email" class="alert alert-danger d-none">
             Este e-mail já está cadastrado para outro cliente.
           </div>
+          <div id="edit-erro-email-formato" class="alert alert-danger d-none">
+            Informe um e-mail válido (ex: nome@exemplo.com ou nome@exemplo.com.br).
+          </div>
           <div class="mb-3">
             <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
             <input type="text" id="edit-nome" class="form-control" placeholder="Nome completo">
@@ -144,9 +150,32 @@
     </div>
   </div>
 
+  <!-- Modal Confirmação Exclusão -->
+  <div class="modal fade" id="modalConfirmar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
+      <div class="modal-content" style="border-radius:14px; border:1px solid rgba(239,68,68,0.2); background:#0f1624">
+        <div class="modal-body p-4">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px">
+            <div style="width:40px; height:40px; border-radius:10px; background:rgba(239,68,68,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0">
+              <i class="bi bi-exclamation-triangle-fill" style="color:#f87171; font-size:1.1rem"></i>
+            </div>
+            <h5 style="margin:0; font-size:1rem; font-weight:700; color:#f1f5f9">Confirmar exclusão</h5>
+          </div>
+          <p style="margin:0; font-size:0.875rem; color:#94a3b8; line-height:1.6">Deseja realmente excluir este cliente? Esta ação não pode ser desfeita.</p>
+        </div>
+        <div class="modal-footer border-0 pt-0 px-4 pb-4" style="gap:10px">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="flex:1">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarExcluir" style="flex:1">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     var clienteEditandoId = null;
+    var _urlExcluir = null;
+    var _modalConfirmar = null;
 
     document.getElementById('modalNovoCliente').addEventListener('show.bs.modal', function() {
       document.getElementById('novo-nome').value = '';
@@ -154,6 +183,7 @@
       document.getElementById('novo-email').value = '';
       document.getElementById('novo-erro-telefone').classList.add('d-none');
       document.getElementById('novo-erro-email').classList.add('d-none');
+      document.getElementById('novo-erro-email-formato').classList.add('d-none');
     });
 
     function cadastrarCliente() {
@@ -161,14 +191,18 @@
       var telefone = document.getElementById('novo-telefone').value.trim();
       var email = document.getElementById('novo-email').value.trim();
       var telPattern = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
-      var emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
+      var emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
       document.getElementById('novo-erro-telefone').classList.add('d-none');
       document.getElementById('novo-erro-email').classList.add('d-none');
+      document.getElementById('novo-erro-email-formato').classList.add('d-none');
 
       if (!nome) { alert('Informe o nome do cliente.'); return; }
       if (!telefone || !telPattern.test(telefone)) { alert('Informe um telefone válido, ex: (11) 99999-9999'); return; }
-      if (!email || !emailPattern.test(email)) { alert('Informe um e-mail válido terminando em .com'); return; }
+      if (!email || !emailPattern.test(email)) {
+        document.getElementById('novo-erro-email-formato').classList.remove('d-none');
+        return;
+      }
 
       fetch('/clientes', {
         method: 'POST',
@@ -209,14 +243,18 @@
       var telefone = document.getElementById('edit-telefone').value.trim();
       var email = document.getElementById('edit-email').value.trim();
       var telPattern = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
-      var emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
-
-      if (!nome) { alert('Informe o nome do cliente.'); return; }
-      if (!telefone || !telPattern.test(telefone)) { alert('Informe um telefone válido, ex: (11) 99999-9999'); return; }
-      if (!email || !emailPattern.test(email)) { alert('Informe um e-mail válido.'); return; }
+      var emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
       document.getElementById('edit-erro-telefone').classList.add('d-none');
       document.getElementById('edit-erro-email').classList.add('d-none');
+      document.getElementById('edit-erro-email-formato').classList.add('d-none');
+
+      if (!nome) { alert('Informe o nome do cliente.'); return; }
+      if (!telefone || !telPattern.test(telefone)) { alert('Informe um telefone válido, ex: (11) 99999-9999'); return; }
+      if (!email || !emailPattern.test(email)) {
+        document.getElementById('edit-erro-email-formato').classList.remove('d-none');
+        return;
+      }
       fetch('/clientes/' + clienteEditandoId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -237,10 +275,19 @@
     }
 
     function excluir(url) {
-      if (confirm('Deseja excluir este cliente?')) {
-        fetch(url, { method: 'DELETE' }).then(function() { location.reload(); });
-      }
+      _urlExcluir = url;
+      _modalConfirmar = new bootstrap.Modal(document.getElementById('modalConfirmar'));
+      _modalConfirmar.show();
     }
+
+    document.getElementById('btnConfirmarExcluir').addEventListener('click', function() {
+      if (_urlExcluir) {
+        fetch(_urlExcluir, { method: 'DELETE' }).then(function() {
+          _modalConfirmar.hide();
+          location.reload();
+        });
+      }
+    });
   </script>
 
 </body>

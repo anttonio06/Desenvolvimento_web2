@@ -134,6 +134,12 @@ router.post('/agendamentos', verificarAutenticacao, (req, res) => {
         db.all(`SELECT * FROM servicos WHERE id IN (${placeholders})`, servicosIds, (err, servicosSel) => {
           if (err || !servicosSel.length) return renderErro('Serviço inválido.');
 
+          const nomes = servicosSel.map(s => s.nome.toLowerCase().trim());
+          const temBanho = nomes.includes('banho');
+          if ((nomes.includes('tosa') || nomes.includes('hidratação')) && !temBanho) {
+            return renderErro('Tosa e Hidratação só podem ser agendados junto com Banho.');
+          }
+
           const { subtotal, desconto, valorFinal } = calcularValores(servicosSel, pet);
 
           db.run(
@@ -258,6 +264,12 @@ router.post('/agendamentos/:id/editar', verificarAutenticacao, (req, res) => {
         const placeholders = servicosIds.map(() => '?').join(',');
         db.all(`SELECT * FROM servicos WHERE id IN (${placeholders})`, servicosIds, (err, servicosSel) => {
           if (err || !servicosSel.length) return renderErro('Serviço inválido.');
+
+          const nomes = servicosSel.map(s => s.nome.toLowerCase().trim());
+          const temBanho = nomes.includes('banho');
+          if ((nomes.includes('tosa') || nomes.includes('hidratação')) && !temBanho) {
+            return renderErro('Tosa e Hidratação só podem ser agendados junto com Banho.');
+          }
 
           const { subtotal, desconto, valorFinal } = calcularValores(servicosSel, pet);
 

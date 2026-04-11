@@ -90,7 +90,32 @@
 
   </main>
 
+  <!-- Modal Confirmação Exclusão -->
+  <div class="modal fade" id="modalConfirmar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
+      <div class="modal-content" style="border-radius:14px; border:1px solid rgba(239,68,68,0.2); background:#0f1624">
+        <div class="modal-body p-4">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px">
+            <div style="width:40px; height:40px; border-radius:10px; background:rgba(239,68,68,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0">
+              <i class="bi bi-exclamation-triangle-fill" style="color:#f87171; font-size:1.1rem"></i>
+            </div>
+            <h5 style="margin:0; font-size:1rem; font-weight:700; color:#f1f5f9">Confirmar exclusão</h5>
+          </div>
+          <p style="margin:0; font-size:0.875rem; color:#94a3b8; line-height:1.6">Deseja realmente excluir este agendamento? Esta ação não pode ser desfeita.</p>
+        </div>
+        <div class="modal-footer border-0 pt-0 px-4 pb-4" style="gap:10px">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="flex:1">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarExcluir" style="flex:1">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    var _urlExcluir = null;
+    var _modalConfirmar = null;
+
     document.getElementById('busca-agendamento').addEventListener('input', function() {
       var termo = this.value.toLowerCase();
       document.querySelectorAll('#tabela-agendamentos tbody tr').forEach(function(tr) {
@@ -110,10 +135,19 @@
     });
 
     function excluir(url) {
-      if (confirm('Deseja excluir este agendamento?')) {
-        fetch(url, { method: 'DELETE' }).then(function() { location.reload(); });
-      }
+      _urlExcluir = url;
+      _modalConfirmar = new bootstrap.Modal(document.getElementById('modalConfirmar'));
+      _modalConfirmar.show();
     }
+
+    document.getElementById('btnConfirmarExcluir').addEventListener('click', function() {
+      if (_urlExcluir) {
+        fetch(_urlExcluir, { method: 'DELETE' }).then(function() {
+          _modalConfirmar.hide();
+          location.reload();
+        });
+      }
+    });
   </script>
 
 </body>
