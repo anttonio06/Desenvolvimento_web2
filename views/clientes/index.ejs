@@ -84,6 +84,9 @@
           <div id="novo-erro-telefone" class="alert alert-danger d-none">
             Este telefone já está cadastrado para outro cliente.
           </div>
+          <div id="novo-erro-telefone-formato" class="alert alert-danger d-none">
+            Informe um telefone válido (ex: (11) 99999-9999).
+          </div>
           <div id="novo-erro-email" class="alert alert-danger d-none">
             Este e-mail já está cadastrado para outro cliente.
           </div>
@@ -122,6 +125,9 @@
         <div class="modal-body">
           <div id="edit-erro-telefone" class="alert alert-danger d-none">
             Este telefone já está cadastrado para outro cliente.
+          </div>
+          <div id="edit-erro-telefone-formato" class="alert alert-danger d-none">
+            Informe um telefone válido (ex: (11) 99999-9999).
           </div>
           <div id="edit-erro-email" class="alert alert-danger d-none">
             Este e-mail já está cadastrado para outro cliente.
@@ -182,6 +188,7 @@
       document.getElementById('novo-telefone').value = '';
       document.getElementById('novo-email').value = '';
       document.getElementById('novo-erro-telefone').classList.add('d-none');
+      document.getElementById('novo-erro-telefone-formato').classList.add('d-none');
       document.getElementById('novo-erro-email').classList.add('d-none');
       document.getElementById('novo-erro-email-formato').classList.add('d-none');
     });
@@ -198,7 +205,10 @@
       document.getElementById('novo-erro-email-formato').classList.add('d-none');
 
       if (!nome) { alert('Informe o nome do cliente.'); return; }
-      if (!telefone || !telPattern.test(telefone)) { alert('Informe um telefone válido, ex: (11) 99999-9999'); return; }
+      if (!telefone || !telPattern.test(telefone)) {
+        document.getElementById('novo-erro-telefone-formato').classList.remove('d-none');
+        return;
+      }
       if (!email || !emailPattern.test(email)) {
         document.getElementById('novo-erro-email-formato').classList.remove('d-none');
         return;
@@ -246,11 +256,15 @@
       var emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
       document.getElementById('edit-erro-telefone').classList.add('d-none');
+      document.getElementById('edit-erro-telefone-formato').classList.add('d-none');
       document.getElementById('edit-erro-email').classList.add('d-none');
       document.getElementById('edit-erro-email-formato').classList.add('d-none');
 
       if (!nome) { alert('Informe o nome do cliente.'); return; }
-      if (!telefone || !telPattern.test(telefone)) { alert('Informe um telefone válido, ex: (11) 99999-9999'); return; }
+      if (!telefone || !telPattern.test(telefone)) {
+        document.getElementById('edit-erro-telefone-formato').classList.remove('d-none');
+        return;
+      }
       if (!email || !emailPattern.test(email)) {
         document.getElementById('edit-erro-email-formato').classList.remove('d-none');
         return;

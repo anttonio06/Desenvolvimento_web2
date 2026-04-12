@@ -63,10 +63,24 @@ router.put('/clientes/:id', verificarAutenticacao, (req, res) => {
 });
 
 router.delete('/clientes/:id', verificarAutenticacao, (req, res) => {
-  db.run('DELETE FROM pets WHERE cliente_id = ?', [req.params.id], (err) => {
-    if (err) return res.json({ ok: false });
-    db.run('DELETE FROM clientes WHERE id = ?', [req.params.id], (err2) => {
-      res.json({ ok: !err2 });
+  const id = req.params.id;
+  db.run(
+    `DELETE FROM agendamento_servicos WHERE agendamento_id IN (
+       SELECT a.id FROM agendamentos a
+       INNER JOIN pets p ON a.pet_id = p.id
+       WHERE p.cliente_id = ?
+     )`, [id], (err1) => {
+    if (err1) return res.json({ ok: false });
+    db.run(
+      'DELETE FROM agendamentos WHERE pet_id IN (SELECT id FROM pets WHERE cliente_id = ?)',
+      [id], (err2) => {
+      if (err2) return res.json({ ok: false });
+      db.run('DELETE FROM pets WHERE cliente_id = ?', [id], (err3) => {
+        if (err3) return res.json({ ok: false });
+        db.run('DELETE FROM clientes WHERE id = ?', [id], (err4) => {
+          res.json({ ok: !err4 });
+        });
+      });
     });
   });
 });

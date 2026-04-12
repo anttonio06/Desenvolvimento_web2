@@ -49,8 +49,17 @@ router.put('/pets/:id', verificarAutenticacao, (req, res) => {
 });
 
 router.delete('/pets/:id', verificarAutenticacao, (req, res) => {
-  db.run('DELETE FROM pets WHERE id = ?', [req.params.id], (err) => {
-    res.json({ ok: !err });
+  const id = req.params.id;
+  db.run(
+    'DELETE FROM agendamento_servicos WHERE agendamento_id IN (SELECT id FROM agendamentos WHERE pet_id = ?)',
+    [id], (err1) => {
+    if (err1) return res.json({ ok: false });
+    db.run('DELETE FROM agendamentos WHERE pet_id = ?', [id], (err2) => {
+      if (err2) return res.json({ ok: false });
+      db.run('DELETE FROM pets WHERE id = ?', [id], (err3) => {
+        res.json({ ok: !err3 });
+      });
+    });
   });
 });
 
