@@ -158,7 +158,7 @@
           <div class="col-md-4">
             <label class="form-label">Status <span class="required-star">*</span></label>
             <select class="form-select" name="status" required>
-              <option value="confirmado" <%= agendamento.status === 'confirmado' ? 'selected' : '' %>>Confirmado</option>
+              <option value="confirmado" <%= agendamento.status === 'confirmado' ? 'selected' : '' %>>Agendado</option>
               <option value="concluido"  <%= agendamento.status === 'concluido'  ? 'selected' : '' %>>Concluído</option>
               <option value="cancelado"  <%= agendamento.status === 'cancelado'  ? 'selected' : '' %>>Cancelado</option>
             </select>
