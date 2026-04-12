@@ -123,12 +123,10 @@ db.serialize(async () => {
           if (insertErr) {
             console.error('Erro ao inserir usuário inicial:', insertErr.message);
           } else {
-            console.log('Usuário inicial criado com sucesso.');
+            // usuário inicial criado
           }
         }
       );
-    } else {
-      console.log('Usuário inicial já existe.');
     }
   });
 });
