@@ -76,6 +76,7 @@ app.delete('/usuarios/:id', verificarAutenticacao, (req, res) => {
 });
 
 app.get('/dashboard', verificarAutenticacao, (req, res) => {
+  res.set('Cache-Control', 'no-store');
   db.get('SELECT COUNT(*) AS total FROM clientes', [], (e1, r1) => {
     db.get('SELECT COUNT(*) AS total FROM pets', [], (e2, r2) => {
       db.get('SELECT COUNT(*) AS total FROM servicos', [], (e3, r3) => {
