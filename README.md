@@ -5,8 +5,8 @@
 
 ## Integrantes
 
-- **Anttonio Osório Molinaro Maccagnini**  
-- **Gabriel Lengert Guedes**  
+- **Anttonio Osório Molinaro Maccagnini** 
+- **Gabriel Lengert Guedes** 
 - **Turma:** T2ESOFT05NB
 
 ---
@@ -42,39 +42,53 @@ Desenvolver um sistema web com:
 
 ### Autenticação
 - Login e logout
-- Perfis de usuário (admin, atendente, cliente)
+- Cadastro de usuários
+- Perfis de usuário (admin, atendente)
 
 ### Clientes
 - Cadastro, edição, listagem e exclusão
+- Validação de e-mail e telefone únicos
+- Visualização de pets vinculados
 
 ### Pets
 - Cadastro vinculado ao cliente
 - Informações detalhadas (espécie, raça, porte, observações)
+- Exclusão em cascata dos agendamentos vinculados
 
 ### Serviços
-- Cadastro com preço, duração e descrição
+- Cadastro com preço por porte (pequeno, médio, grande) e descrição
+- Listagem e edição
 
-### Agenda
+### Agenda (Implementação futura)
 - Visualização por dia ou semana
 - Filtros por serviço, pet ou atendente
 
 ### Agendamentos
-- Criação com validação de conflito
+- Criação com validação de conflito de horário
+- Seleção de múltiplos serviços por agendamento
+- Cálculo automático do valor total com base no porte do pet
 - Cancelamento e reagendamento
+- Filtro por status
 - Controle de status:
-  - Marcado
-  - Em atendimento
+  - Agendado
   - Concluído
   - Cancelado
+  
+### Dashboard
+- Resumo do dia (agendamentos, clientes, pets e serviços)
+- Lista de clientes cadastrados
+- Lista de agendamentos recentes
 
 ---
 
 ## Regras de Negócio
 
-- Não permitir dois agendamentos no mesmo horário  
-- Considerar duração do serviço para evitar conflitos  
+- Não permitir mais de três agendamentos para mesma tarefa no mesmo horário
+- Não permitir o mesmo pet com o(s) mesmo(s) serviço(s) no mesmo dia e horário
+- Tosa e Hidratação só podem ser agendados junto com Banho
 - Rotas protegidas por autenticação  
-- Senhas armazenadas com hash  
+- Senhas armazenadas com hash
+- Apenas o administrador pode visualizar senhas e excluir usuários
 
 ---
 
@@ -82,10 +96,9 @@ Desenvolver um sistema web com:
 
 O sistema segue o padrão **MVC (Model-View-Controller)**:
 
-- **Routes** → definição das rotas  
-- **Controllers** → controle das requisições  
-- **Services** → regras de negócio  
-- **Repositories** → acesso ao banco de dados  
+- **Routes** → definição das rotas e controle das requisições
+- **Views (EJS)** → renderização das páginas no servidor
+- **Database** → acesso direto ao banco de dados SQLite
 
 ---
 
@@ -93,10 +106,11 @@ O sistema segue o padrão **MVC (Model-View-Controller)**:
 
 ```txt
 Usuario (id, nome, email, senha, permissoes)
-Cliente (id, nome, telefone, email)
-Pet (id, cliente_id, nome, especie, raca, porte, observacoes)
-Servico (id, nome, duracao_min, preco, descricao)
-Agendamento (id, cliente_id, pet_id, servico_id, data_hora, status, observacoes)
+Cliente (id, nome, telefone, email, criado_em)
+Pet (id, cliente_id, nome, especie, raca, porte)
+Servico(id, nome, duracao_min, preco_pequeno, preco_medio, preco_grande)
+Agendamento(id, cliente_id, pet_id, data_hora, status, observacoes, valor)
+Agend_Servicos(id, agendamento_id, servico_id, valor)
 ```
 ## Diagramas de Arquitetura em Modelo C4
 
