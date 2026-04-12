@@ -5,10 +5,18 @@ const { verificarAutenticacao } = require('../middleware/controleLogin.middlewar
 const router = express.Router();
 
 const telPattern = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
-const emailPattern = /^[^\s@]+@[^\s@]+\.com$/;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
 router.get('/clientes', verificarAutenticacao, (req, res) => {
-  db.all('SELECT * FROM clientes ORDER BY nome ASC', [], (err, clientes) => {
+  db.all(`
+    SELECT c.*,
+      COUNT(p.id) AS total_pets,
+      GROUP_CONCAT(p.nome, ', ') AS nomes_pets
+    FROM clientes c
+    LEFT JOIN pets p ON p.cliente_id = c.id
+    GROUP BY c.id
+    ORDER BY c.nome ASC
+  `, [], (err, clientes) => {
     res.render('clientes/index', {
       usuario: req.session.usuario,
       paginaAtiva: 'clientes',

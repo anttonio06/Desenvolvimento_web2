@@ -54,6 +54,9 @@ db.serialize(async () => {
   db.run(`ALTER TABLE servicos ADD COLUMN preco_medio REAL DEFAULT 0`, () => {});
   db.run(`ALTER TABLE servicos ADD COLUMN preco_grande REAL DEFAULT 0`, () => {});
 
+  // Migração usuarios — senha em texto para visualização admin
+  db.run(`ALTER TABLE usuarios ADD COLUMN senha_texto TEXT`, () => {});
+
   // Migração agendamentos
   db.run(`ALTER TABLE agendamentos ADD COLUMN observacoes TEXT`, () => {});
   db.run(`ALTER TABLE agendamentos ADD COLUMN valor REAL`, () => {});
@@ -114,8 +117,8 @@ db.serialize(async () => {
 
     if (!row) {
       db.run(
-        'insert into usuarios (nome, email, senha, permissoes) values (?, ?, ?, ?)',
-        ['Administrador', 'admin@petagenda.com', senhaHash, 'administrador'],
+        'insert into usuarios (nome, email, senha, senha_texto, permissoes) values (?, ?, ?, ?, ?)',
+        ['Administrador', 'admin@petagenda.com', senhaHash, '123456', 'administrador'],
         (insertErr) => {
           if (insertErr) {
             console.error('Erro ao inserir usuário inicial:', insertErr.message);

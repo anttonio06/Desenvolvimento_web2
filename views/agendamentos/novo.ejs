@@ -404,20 +404,10 @@
 
       itensEl.innerHTML = html;
 
-      const temDesconto = checkboxes.length > 1;
-      const desconto = temDesconto ? Math.round(subtotal * 0.10 * 100) / 100 : 0;
-      const total = Math.round((subtotal - desconto) * 100) / 100;
+      const total = Math.round(subtotal * 100) / 100;
 
       document.getElementById('resumo-subtotal-val').textContent = fmt(subtotal);
-
-      const descontoLinha = document.getElementById('resumo-desconto-linha');
-      if (temDesconto) {
-        descontoLinha.style.display = '';
-        document.getElementById('resumo-desconto-val').textContent = '− ' + fmt(desconto);
-      } else {
-        descontoLinha.style.display = 'none';
-      }
-
+      document.getElementById('resumo-desconto-linha').style.display = 'none';
       document.getElementById('resumo-total-val').textContent = fmt(total);
     }
 

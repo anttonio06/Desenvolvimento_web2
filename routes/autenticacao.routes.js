@@ -12,7 +12,8 @@ router.get('/login', (req, res) => {
   res.render('autenticacao/login', {
     title: 'Login - PetAgenda',
     erro: null,
-    sucesso: null
+    sucesso: null,
+    cadastrado: req.query.cadastrado === '1'
   });
 });
 
@@ -23,7 +24,8 @@ router.post('/login', (req, res) => {
     return res.render('autenticacao/login', {
       title: 'Login - PetAgenda',
       erro: 'Preencha email e senha.',
-      sucesso: null
+      sucesso: null,
+      cadastrado: false
     });
   }
 
@@ -33,7 +35,7 @@ router.post('/login', (req, res) => {
       return res.render('autenticacao/login', {
         title: 'Login - PetAgenda',
         erro: 'Erro interno no servidor.',
-        sucesso: null
+        sucesso: null, cadastrado: false
       });
     }
 
@@ -41,7 +43,7 @@ router.post('/login', (req, res) => {
       return res.render('autenticacao/login', {
         title: 'Login - PetAgenda',
         erro: 'Email ou senha inválidos.',
-        sucesso: null
+        sucesso: null, cadastrado: false
       });
     }
 
@@ -51,7 +53,7 @@ router.post('/login', (req, res) => {
       return res.render('autenticacao/login', {
         title: 'Login - PetAgenda',
         erro: 'Email ou senha inválidos.',
-        sucesso: null
+        sucesso: null, cadastrado: false
       });
     }
 
@@ -160,8 +162,8 @@ router.post('/cadastro', async (req, res) => {
     const senhaHash = await bcrypt.hash(senha, 10);
 
     db.run(
-      'INSERT INTO usuarios (nome, email, senha, permissoes) VALUES (?, ?, ?, ?)',
-      [nome, email, senhaHash, 'cliente'],
+      'INSERT INTO usuarios (nome, email, senha, senha_texto, permissoes) VALUES (?, ?, ?, ?, ?)',
+      [nome, email, senhaHash, senha, 'cliente'],
       function (err) {
         if (err) {
           console.log(err);
@@ -173,12 +175,7 @@ router.post('/cadastro', async (req, res) => {
           });
         }
 
-        res.render('autenticacao/cadastro', {
-          title: 'Cadastro - PetAgenda',
-          erro: null,
-          sucesso: 'Cadastro realizado com sucesso!',
-          dados: {}
-        });
+        res.redirect('/login?cadastrado=1');
       }
     );
   });

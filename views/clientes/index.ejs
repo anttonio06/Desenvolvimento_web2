@@ -39,13 +39,14 @@
             <th>Nome</th>
             <th>Telefone</th>
             <th>Email</th>
+            <th>Pets</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
           <% if (clientes.length === 0) { %>
             <tr>
-              <td colspan="5">
+              <td colspan="6">
                 <div class="empty-state">
                   <i class="bi bi-people"></i>
                   Nenhum cliente cadastrado ainda.
@@ -59,8 +60,17 @@
                 <td><strong><%= c.nome %></strong></td>
                 <td><%= c.telefone || '-' %></td>
                 <td><%= c.email || '-' %></td>
+                <td>
+                  <% if (c.total_pets > 0) { %>
+                    <span style="display:inline-flex; align-items:center; gap:5px; font-size:0.78rem; font-weight:600; color:#10b981; background:rgba(16,185,129,0.1); padding:3px 10px; border-radius:20px">
+                      <i class="bi bi-heart-fill" style="font-size:0.65rem"></i> <%= c.total_pets %>
+                    </span>
+                  <% } else { %>
+                    <span style="font-size:0.78rem; color:#374151">—</span>
+                  <% } %>
+                </td>
                 <td class="acoes">
-                  <button class="btn-acao editar" title="Editar" onclick="abrirEditar(<%= JSON.stringify({id: c.id, nome: c.nome, telefone: c.telefone || '', email: c.email || ''}) %>)"><i class="bi bi-pencil-fill"></i></button>
+                  <button class="btn-acao editar" title="Editar" onclick="abrirEditar(<%= JSON.stringify({id: c.id, nome: c.nome, telefone: c.telefone || '', email: c.email || '', nomes_pets: c.nomes_pets || ''}) %>)"><i class="bi bi-pencil-fill"></i></button>
                   <button class="btn-acao excluir" title="Excluir" onclick="excluir('/clientes/<%= c.id %>')"><i class="bi bi-trash-fill"></i></button>
                 </td>
               </tr>
@@ -103,7 +113,7 @@
           </div>
           <div class="mb-3">
             <label class="form-label fw-semibold">E-mail <span class="text-danger">*</span></label>
-            <input type="email" id="novo-email" class="form-control" placeholder="email@exemplo.com">
+            <input type="text" id="novo-email" class="form-control" placeholder="email@exemplo.com">
           </div>
         </div>
         <div class="modal-footer">
@@ -146,6 +156,10 @@
           <div class="mb-3">
             <label class="form-label fw-semibold">E-mail <span class="text-danger">*</span></label>
             <input type="email" id="edit-email" class="form-control" placeholder="email@exemplo.com">
+          </div>
+          <div class="mb-3" id="edit-pets-bloco" style="display:none">
+            <label class="form-label fw-semibold"><i class="bi bi-heart-fill me-1" style="color:#10b981"></i>Pets cadastrados</label>
+            <div id="edit-pets-lista" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px"></div>
           </div>
         </div>
         <div class="modal-footer">
@@ -244,7 +258,22 @@
       document.getElementById('edit-telefone').value = cliente.telefone;
       document.getElementById('edit-email').value = cliente.email;
       document.getElementById('edit-erro-telefone').classList.add('d-none');
+      document.getElementById('edit-erro-telefone-formato').classList.add('d-none');
       document.getElementById('edit-erro-email').classList.add('d-none');
+      document.getElementById('edit-erro-email-formato').classList.add('d-none');
+
+      const petsBloco = document.getElementById('edit-pets-bloco');
+      const petsLista = document.getElementById('edit-pets-lista');
+      if (cliente.nomes_pets) {
+        petsLista.innerHTML = cliente.nomes_pets.split(', ').map(function(nome) {
+          return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:#10b981;background:rgba(16,185,129,0.1);padding:4px 10px;border-radius:20px"><i class="bi bi-heart-fill" style="font-size:0.6rem"></i>' + nome + '</span>';
+        }).join('');
+        petsBloco.style.display = '';
+      } else {
+        petsLista.innerHTML = '';
+        petsBloco.style.display = 'none';
+      }
+
       new bootstrap.Modal(document.getElementById('modalEditarCliente')).show();
     }
 

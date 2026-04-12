@@ -33,9 +33,8 @@ function calcularValores(servicosSelecionados, pet) {
     return { servico: s, preco };
   });
 
-  const temDesconto = itens.length > 1;
-  const desconto = temDesconto ? Math.round(subtotal * 0.10 * 100) / 100 : 0;
-  const valorFinal = Math.round((subtotal - desconto) * 100) / 100;
+  const desconto = 0;
+  const valorFinal = Math.round(subtotal * 100) / 100;
 
   return { itens, subtotal, desconto, valorFinal };
 }
@@ -143,7 +142,7 @@ router.post('/agendamentos', verificarAutenticacao, (req, res) => {
           const { subtotal, desconto, valorFinal } = calcularValores(servicosSel, pet);
 
           db.run(
-            `INSERT INTO agendamentos (cliente_id, pet_id, data_hora, status, observacoes, valor, desconto) VALUES (?, ?, ?, 'pendente', ?, ?, ?)`,
+            `INSERT INTO agendamentos (cliente_id, pet_id, data_hora, status, observacoes, valor, desconto) VALUES (?, ?, ?, 'confirmado', ?, ?, ?)`,
             [pet.cliente_id, pet_id, data_hora, observacoes || null, valorFinal, desconto],
             function(err) {
               if (err) return renderErro('Erro ao salvar. Tente novamente.');

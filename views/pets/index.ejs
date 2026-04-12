@@ -138,6 +138,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
+          <div id="edit-erro-pet" class="alert alert-danger d-none"></div>
           <div class="mb-3">
             <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
             <input type="text" id="edit-nome" class="form-control" placeholder="Nome do pet" required>
@@ -215,6 +216,12 @@
       });
     });
 
+    function mostrarErroPet(msg) {
+      var el = document.getElementById('edit-erro-pet');
+      el.textContent = msg;
+      el.classList.remove('d-none');
+    }
+
     function abrirEditar(pet) {
       petEditandoId = pet.id;
       document.getElementById('edit-nome').value = pet.nome;
@@ -222,6 +229,7 @@
       document.getElementById('edit-raca').value = pet.raca;
       document.getElementById('edit-porte').value = pet.porte;
       document.getElementById('edit-cliente_id').value = pet.cliente_id;
+      document.getElementById('edit-erro-pet').classList.add('d-none');
       new bootstrap.Modal(document.getElementById('modalEditarPet')).show();
     }
 
@@ -232,11 +240,13 @@
       var porte = document.getElementById('edit-porte').value;
       var cliente_id = document.getElementById('edit-cliente_id').value;
 
-      if (!nome) { alert('Informe o nome do pet.'); return; }
-      if (!especie) { alert('Selecione a espécie.'); return; }
-      if (!raca) { alert('Informe a raça do pet.'); return; }
-      if (!porte) { alert('Selecione o porte.'); return; }
-      if (!cliente_id) { alert('Selecione o tutor.'); return; }
+      document.getElementById('edit-erro-pet').classList.add('d-none');
+
+      if (!nome) { mostrarErroPet('Informe o nome do pet.'); return; }
+      if (!especie) { mostrarErroPet('Selecione a espécie.'); return; }
+      if (!raca) { mostrarErroPet('Informe a raça do pet.'); return; }
+      if (!porte) { mostrarErroPet('Selecione o porte.'); return; }
+      if (!cliente_id) { mostrarErroPet('Selecione o tutor.'); return; }
 
       fetch('/pets/' + petEditandoId, {
         method: 'PUT',
