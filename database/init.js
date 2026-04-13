@@ -45,24 +45,19 @@ db.serialize(async () => {
     )
   `);
 
-  // Índices únicos para email e telefone de clientes (ignora erro se já houver duplicatas)
   db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_clientes_email ON clientes(email) WHERE email IS NOT NULL AND email != ''`, () => {});
   db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_clientes_telefone ON clientes(telefone) WHERE telefone IS NOT NULL AND telefone != ''`, () => {});
 
-  // Migração para bancos existentes (ignora erro se coluna já existe)
   db.run(`ALTER TABLE servicos ADD COLUMN preco_pequeno REAL DEFAULT 0`, () => {});
   db.run(`ALTER TABLE servicos ADD COLUMN preco_medio REAL DEFAULT 0`, () => {});
   db.run(`ALTER TABLE servicos ADD COLUMN preco_grande REAL DEFAULT 0`, () => {});
 
-  // Migração usuarios — senha em texto para visualização admin
   db.run(`ALTER TABLE usuarios ADD COLUMN senha_texto TEXT`, () => {});
 
-  // Migração agendamentos
   db.run(`ALTER TABLE agendamentos ADD COLUMN observacoes TEXT`, () => {});
   db.run(`ALTER TABLE agendamentos ADD COLUMN valor REAL`, () => {});
   db.run(`ALTER TABLE agendamentos ADD COLUMN desconto REAL DEFAULT 0`, () => {});
 
-  // Tabela de serviços por agendamento (múltiplos serviços)
   db.run(`
     CREATE TABLE IF NOT EXISTS agendamento_servicos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -123,7 +118,6 @@ db.serialize(async () => {
           if (insertErr) {
             console.error('Erro ao inserir usuário inicial:', insertErr.message);
           } else {
-            // usuário inicial criado
           }
         }
       );
