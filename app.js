@@ -10,6 +10,7 @@ const clientesRoutes = require('./routes/clientes.routes');
 const petsRoutes = require('./routes/pets.routes');
 const servicosRoutes = require('./routes/servicos.routes');
 const agendamentosRoutes = require('./routes/agendamentos.routes');
+const funcionariosRoutes = require('./routes/funcionarios.routes');
 const { verificarAutenticacao } = require('./middleware/controleLogin.middleware');
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/', clientesRoutes);
 app.use('/', petsRoutes);
 app.use('/', servicosRoutes);
 app.use('/', agendamentosRoutes);
+app.use('/', funcionariosRoutes);
 
 app.get('/', (req, res) => {
   res.redirect('/login');
@@ -92,17 +94,33 @@ app.get('/dashboard', verificarAutenticacao, (req, res) => {
             GROUP BY a.id
             ORDER BY a.data_hora ASC
           `, [], (e5, agendamentos) => {
-            const hoje = new Date().toISOString().split('T')[0];
-            const totalHoje = (agendamentos || []).filter(a => a.data_hora && a.data_hora.startsWith(hoje)).length;
-            res.render('dashboard/dashboard', {
-              usuario: req.session.usuario,
-              paginaAtiva: 'dashboard',
-              totalClientes: (r1 && !e1) ? r1.total : 0,
-              totalPets: (r2 && !e2) ? r2.total : 0,
-              totalServicos: (r3 && !e3) ? r3.total : 0,
-              ultimosClientes: (ultimosClientes && !e4) ? ultimosClientes : [],
-              agendamentos: (agendamentos && !e5) ? agendamentos : [],
-              totalHoje
+            db.all(`
+              SELECT p.nome, p.especie, p.raca, c.nome AS cliente_nome
+              FROM pets p
+              LEFT JOIN clientes c ON c.id = p.cliente_id
+              ORDER BY p.id DESC
+            `, [], (e6, ultimosPets) => {
+              db.all(`
+                SELECT u.nome, u.email, f.telefone, f.ativo
+                FROM usuarios u
+                LEFT JOIN funcionarios f ON f.usuario_id = u.id
+                ORDER BY u.nome ASC
+              `, [], (e7, ultimosFuncionarios) => {
+                const hoje = new Date().toISOString().split('T')[0];
+                const totalHoje = (agendamentos || []).filter(a => a.data_hora && a.data_hora.startsWith(hoje)).length;
+                res.render('dashboard/dashboard', {
+                  usuario: req.session.usuario,
+                  paginaAtiva: 'dashboard',
+                  totalClientes: (r1 && !e1) ? r1.total : 0,
+                  totalPets: (r2 && !e2) ? r2.total : 0,
+                  totalServicos: (r3 && !e3) ? r3.total : 0,
+                  ultimosClientes: (ultimosClientes && !e4) ? ultimosClientes : [],
+                  agendamentos: (agendamentos && !e5) ? agendamentos : [],
+                  ultimosPets: (ultimosPets && !e6) ? ultimosPets : [],
+                  ultimosFuncionarios: (ultimosFuncionarios && !e7) ? ultimosFuncionarios : [],
+                  totalHoje
+                });
+              });
             });
           });
         });

@@ -292,6 +292,23 @@
           </div>
         </div>
 
+        <!-- ── FUNCIONÁRIO ── -->
+        <% if (funcionarios && funcionarios.length > 0) { %>
+        <div class="form-divider"></div>
+        <div class="form-section"><i class="bi bi-person-badge-fill"></i> Funcionário <span class="optional-label">(opcional)</span></div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-5">
+            <label class="form-label">Preferência de funcionário</label>
+            <select class="form-select" name="funcionario_id">
+              <option value="">Qualquer funcionário</option>
+              <% funcionarios.forEach(function(f) { %>
+                <option value="<%= f.id %>"><%= f.nome %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <% } %>
+
         <!-- ── OBSERVAÇÕES ── -->
         <div class="mb-2">
           <label class="form-label">Observações <span class="optional-label">(opcional)</span></label>

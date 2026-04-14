@@ -57,6 +57,21 @@ db.serialize(async () => {
   db.run(`ALTER TABLE agendamentos ADD COLUMN observacoes TEXT`, () => {});
   db.run(`ALTER TABLE agendamentos ADD COLUMN valor REAL`, () => {});
   db.run(`ALTER TABLE agendamentos ADD COLUMN desconto REAL DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE agendamentos ADD COLUMN funcionario_id INTEGER`, () => {});
+
+  db.run(`ALTER TABLE funcionarios ADD COLUMN cpf TEXT`, () => {});
+  db.run(`ALTER TABLE funcionarios ADD COLUMN email TEXT`, () => {});
+  db.run(`ALTER TABLE funcionarios ADD COLUMN usuario_id INTEGER`, () => {});
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS funcionarios (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      telefone TEXT,
+      ativo INTEGER DEFAULT 1,
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 
   db.run(`
     CREATE TABLE IF NOT EXISTS agendamento_servicos (
@@ -112,8 +127,8 @@ db.serialize(async () => {
 
     if (!row) {
       db.run(
-        'insert into usuarios (nome, email, senha, senha_texto, permissoes) values (?, ?, ?, ?, ?)',
-        ['Administrador', 'admin@petagenda.com', senhaHash, '123456', 'administrador'],
+        'insert into usuarios (nome, email, senha, permissoes) values (?, ?, ?, ?)',
+        ['Administrador', 'admin@petagenda.com', senhaHash, 'administrador'],
         (insertErr) => {
           if (insertErr) {
             console.error('Erro ao inserir usuário inicial:', insertErr.message);

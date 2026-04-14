@@ -76,10 +76,9 @@
                 Entrar
               </button>
 
-              <div class="bottom-links d-flex justify-content-between mt-3">
+              <div class="bottom-links mt-3">
                 <a href="/esqueci-senha" class="small-link">Esqueceu a senha?</a>
-                <a href="/cadastro" class="small-link">Cadastre-se</a>
-                </div>
+              </div>
             </form>
           </div>
         </div>
@@ -102,35 +101,5 @@
     </div>
   </main>
 
-  <% if (cadastrado) { %>
-  <div id="toast-cadastro" style="
-    position:fixed; bottom:28px; right:28px;
-    display:flex; align-items:center; gap:12px;
-    background:#0a1f16; border:1px solid rgba(16,185,129,0.35);
-    border-radius:12px; padding:14px 18px;
-    box-shadow:0 8px 32px rgba(0,0,0,0.5);
-    z-index:9999; min-width:260px;
-    animation: slideUp 0.3s ease;">
-    <div style="width:36px;height:36px;border-radius:8px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <i class="bi bi-check-circle-fill" style="color:#10b981;font-size:1rem"></i>
-    </div>
-    <div>
-      <div style="font-size:0.82rem;font-weight:600;color:#f1f5f9">Cadastro realizado!</div>
-      <div style="font-size:0.75rem;color:#6b7280">Faça login para continuar.</div>
-    </div>
-  </div>
-  <style>
-    @keyframes slideUp {
-      from { opacity:0; transform:translateY(16px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-  </style>
-  <script>
-    setTimeout(function() {
-      var t = document.getElementById('toast-cadastro');
-      if (t) { t.style.transition='opacity 0.4s'; t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }
-    }, 4000);
-  </script>
-  <% } %>
 </body>
 </html>

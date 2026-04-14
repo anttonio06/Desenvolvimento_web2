@@ -586,3 +586,20 @@ a.sidebar-user:hover {
 .scroll-list::-webkit-scrollbar-thumb:hover {
   background: rgba(255,255,255,0.22);
 }
+
+/* Cards fixos do dashboard */
+.dash-card {
+  height: 360px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+.dash-card .scroll-list {
+  flex: 1;
+  max-height: none;
+  min-height: 0;
+}
+.dash-card .dash-card-footer {
+  flex-shrink: 0;
+  padding-top: 12px;
+}

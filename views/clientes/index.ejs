@@ -97,6 +97,9 @@
           <div id="novo-erro-telefone-formato" class="alert alert-danger d-none">
             Informe um telefone válido (ex: (11) 99999-9999).
           </div>
+          <div id="novo-erro-email-funcionario" class="alert alert-danger d-none">
+            Este e-mail pertence a um funcionário e não pode ser usado para cliente.
+          </div>
           <div id="novo-erro-email" class="alert alert-danger d-none">
             Este e-mail já está cadastrado para outro cliente.
           </div>
@@ -157,10 +160,11 @@
             <label class="form-label fw-semibold">E-mail <span class="text-danger">*</span></label>
             <input type="email" id="edit-email" class="form-control" placeholder="email@exemplo.com">
           </div>
-          <div class="mb-3" id="edit-pets-bloco" style="display:none">
-            <label class="form-label fw-semibold"><i class="bi bi-heart-fill me-1" style="color:#10b981"></i>Pets cadastrados</label>
-            <div id="edit-pets-lista" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px"></div>
+          <hr style="border-color:rgba(255,255,255,0.07);margin:18px 0 14px">
+          <div style="font-size:0.7rem;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">
+            <i class="bi bi-heart-fill"></i> Pets cadastrados
           </div>
+          <div id="edit-pets-lista"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -197,6 +201,24 @@
     var _urlExcluir = null;
     var _modalConfirmar = null;
 
+    function mascaraTelefone(valor) {
+      var nums = valor.replace(/\D/g, '').slice(0, 11);
+      if (nums.length === 0) return '';
+      if (nums.length <= 2) return '(' + nums;
+      if (nums.length <= 7) return '(' + nums.slice(0,2) + ') ' + nums.slice(2);
+      return '(' + nums.slice(0,2) + ') ' + nums.slice(2,7) + '-' + nums.slice(7);
+    }
+
+    document.getElementById('novo-telefone').addEventListener('input', function() {
+      var cursor = this.selectionStart;
+      var antigo = this.value;
+      this.value = mascaraTelefone(antigo);
+    });
+
+    document.getElementById('edit-telefone').addEventListener('input', function() {
+      this.value = mascaraTelefone(this.value);
+    });
+
     document.getElementById('modalNovoCliente').addEventListener('show.bs.modal', function() {
       document.getElementById('novo-nome').value = '';
       document.getElementById('novo-telefone').value = '';
@@ -211,10 +233,11 @@
       var nome = document.getElementById('novo-nome').value.trim();
       var telefone = document.getElementById('novo-telefone').value.trim();
       var email = document.getElementById('novo-email').value.trim();
-      var telPattern = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
+      var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
       var emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
       document.getElementById('novo-erro-telefone').classList.add('d-none');
+      document.getElementById('novo-erro-email-funcionario').classList.add('d-none');
       document.getElementById('novo-erro-email').classList.add('d-none');
       document.getElementById('novo-erro-email-formato').classList.add('d-none');
 
@@ -238,6 +261,9 @@
         } else if (data.erro === 'telefone_duplicado') {
           document.getElementById('novo-telefone').value = '';
           document.getElementById('novo-erro-telefone').classList.remove('d-none');
+        } else if (data.erro === 'email_funcionario') {
+          document.getElementById('novo-email').value = '';
+          document.getElementById('novo-erro-email-funcionario').classList.remove('d-none');
         } else if (data.erro === 'email_duplicado') {
           document.getElementById('novo-email').value = '';
           document.getElementById('novo-erro-email').classList.remove('d-none');
@@ -255,33 +281,47 @@
     function abrirEditar(cliente) {
       clienteEditandoId = cliente.id;
       document.getElementById('edit-nome').value = cliente.nome;
-      document.getElementById('edit-telefone').value = cliente.telefone;
+      document.getElementById('edit-telefone').value = mascaraTelefone(cliente.telefone);
       document.getElementById('edit-email').value = cliente.email;
       document.getElementById('edit-erro-telefone').classList.add('d-none');
       document.getElementById('edit-erro-telefone-formato').classList.add('d-none');
       document.getElementById('edit-erro-email').classList.add('d-none');
       document.getElementById('edit-erro-email-formato').classList.add('d-none');
 
-      const petsBloco = document.getElementById('edit-pets-bloco');
-      const petsLista = document.getElementById('edit-pets-lista');
-      if (cliente.nomes_pets) {
-        petsLista.innerHTML = cliente.nomes_pets.split(', ').map(function(nome) {
-          return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:#10b981;background:rgba(16,185,129,0.1);padding:4px 10px;border-radius:20px"><i class="bi bi-heart-fill" style="font-size:0.6rem"></i>' + nome + '</span>';
-        }).join('');
-        petsBloco.style.display = '';
-      } else {
-        petsLista.innerHTML = '';
-        petsBloco.style.display = 'none';
-      }
+      var petsLista = document.getElementById('edit-pets-lista');
+      petsLista.innerHTML = '<div style="color:#4b5563;font-size:0.82rem;padding:6px 0">Carregando...</div>';
 
       new bootstrap.Modal(document.getElementById('modalEditarCliente')).show();
+
+      fetch('/clientes/' + cliente.id + '/pets')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var pets = data.pets || [];
+          if (pets.length === 0) {
+            petsLista.innerHTML = '<div style="font-size:0.82rem;color:#4b5563;padding:6px 0"><i class="bi bi-heart" style="margin-right:5px"></i>Nenhum pet cadastrado.</div>';
+            return;
+          }
+          var porteLabel = { pequeno: 'Pequeno', medio: 'Médio', grande: 'Grande' };
+          petsLista.innerHTML = pets.map(function(p) {
+            var detalhes = [p.especie];
+            if (p.raca) detalhes.push(p.raca);
+            if (p.porte) detalhes.push(porteLabel[p.porte] || p.porte);
+            return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.12);border-radius:10px;margin-bottom:6px">'
+              + '<i class="bi bi-heart-fill" style="color:#10b981;font-size:0.75rem;flex-shrink:0"></i>'
+              + '<div>'
+              + '<div style="font-size:0.85rem;font-weight:600;color:#f1f5f9">' + p.nome + '</div>'
+              + '<div style="font-size:0.75rem;color:#6b7280;margin-top:1px">' + detalhes.join(' · ') + '</div>'
+              + '</div>'
+              + '</div>';
+          }).join('');
+        });
     }
 
     function salvarEdicao() {
       var nome = document.getElementById('edit-nome').value.trim();
       var telefone = document.getElementById('edit-telefone').value.trim();
       var email = document.getElementById('edit-email').value.trim();
-      var telPattern = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
+      var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
       var emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
       document.getElementById('edit-erro-telefone').classList.add('d-none');

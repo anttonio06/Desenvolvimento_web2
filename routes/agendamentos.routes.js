@@ -12,7 +12,9 @@ function carregarFormData(cb) {
     FROM pets p LEFT JOIN clientes c ON p.cliente_id = c.id ORDER BY p.nome ASC
   `, [], (e1, pets) => {
     db.all('SELECT * FROM servicos ORDER BY nome ASC', [], (e2, servicos) => {
-      cb(e1 ? [] : pets, e2 ? [] : servicos);
+      db.all('SELECT * FROM funcionarios WHERE ativo = 1 ORDER BY nome ASC', [], (e3, funcionarios) => {
+        cb(e1 ? [] : pets, e2 ? [] : servicos, e3 ? [] : funcionarios);
+      });
     });
   });
 }
@@ -47,12 +49,14 @@ router.get('/agendamentos', verificarAutenticacao, (req, res) => {
            c.nome AS cliente_nome,
            p.nome AS pet_nome,
            p.porte AS pet_porte,
-           GROUP_CONCAT(s.nome, ', ') AS servicos_nomes
+           GROUP_CONCAT(s.nome, ', ') AS servicos_nomes,
+           f.nome AS funcionario_nome
     FROM agendamentos a
     LEFT JOIN clientes c ON a.cliente_id = c.id
     LEFT JOIN pets p ON a.pet_id = p.id
     LEFT JOIN agendamento_servicos ag_s ON ag_s.agendamento_id = a.id
     LEFT JOIN servicos s ON s.id = ag_s.servico_id
+    LEFT JOIN funcionarios f ON f.id = a.funcionario_id
     GROUP BY a.id
     ORDER BY a.data_hora DESC
   `, [], (err, agendamentos) => {
@@ -67,11 +71,11 @@ router.get('/agendamentos', verificarAutenticacao, (req, res) => {
 // ── Formulário novo agendamento ───────────────────────────────────────────────
 
 router.get('/agendamentos/novo', verificarAutenticacao, (req, res) => {
-  carregarFormData((pets, servicos) => {
+  carregarFormData((pets, servicos, funcionarios) => {
     res.render('agendamentos/novo', {
       usuario: req.session.usuario,
       paginaAtiva: 'agendamentos',
-      pets, servicos, erro: null
+      pets, servicos, funcionarios, erro: null
     });
   });
 });
@@ -79,14 +83,14 @@ router.get('/agendamentos/novo', verificarAutenticacao, (req, res) => {
 // ── Criar agendamento ─────────────────────────────────────────────────────────
 
 router.post('/agendamentos', verificarAutenticacao, (req, res) => {
-  const { pet_id, data, hora, observacoes } = req.body;
+  const { pet_id, data, hora, observacoes, funcionario_id } = req.body;
   const servicosIds = normalizarServicos(req.body.servicos);
 
   const renderErro = (erro) => {
-    carregarFormData((pets, servicos) => {
+    carregarFormData((pets, servicos, funcionarios) => {
       res.render('agendamentos/novo', {
         usuario: req.session.usuario, paginaAtiva: 'agendamentos',
-        pets, servicos, erro
+        pets, servicos, funcionarios, erro
       });
     });
   };
@@ -141,9 +145,10 @@ router.post('/agendamentos', verificarAutenticacao, (req, res) => {
 
           const { subtotal, desconto, valorFinal } = calcularValores(servicosSel, pet);
 
+          const funcId = funcionario_id && parseInt(funcionario_id) > 0 ? parseInt(funcionario_id) : null;
           db.run(
-            `INSERT INTO agendamentos (cliente_id, pet_id, data_hora, status, observacoes, valor, desconto) VALUES (?, ?, ?, 'confirmado', ?, ?, ?)`,
-            [pet.cliente_id, pet_id, data_hora, observacoes || null, valorFinal, desconto],
+            `INSERT INTO agendamentos (cliente_id, pet_id, data_hora, status, observacoes, valor, desconto, funcionario_id) VALUES (?, ?, ?, 'confirmado', ?, ?, ?, ?)`,
+            [pet.cliente_id, pet_id, data_hora, observacoes || null, valorFinal, desconto, funcId],
             function(err) {
               if (err) return renderErro('Erro ao salvar. Tente novamente.');
 
@@ -183,15 +188,14 @@ router.get('/agendamentos/:id/editar', verificarAutenticacao, (req, res) => {
     db.all(`SELECT servico_id FROM agendamento_servicos WHERE agendamento_id = ?`, [agendamento.id], (err, agServicos) => {
       const servicosSelecionadosIds = (agServicos || []).map(r => r.servico_id);
 
-      carregarFormData((pets, servicos) => {
-        const dataHora = new Date(agendamento.data_hora);
+      carregarFormData((pets, servicos, funcionarios) => {
         const data = agendamento.data_hora.split(' ')[0] || agendamento.data_hora.split('T')[0];
         const hora = agendamento.data_hora.slice(11, 16);
 
         res.render('agendamentos/editar', {
           usuario: req.session.usuario,
           paginaAtiva: 'agendamentos',
-          agendamento, pets, servicos,
+          agendamento, pets, servicos, funcionarios,
           servicosSelecionadosIds,
           data, hora, erro: null
         });
@@ -203,7 +207,7 @@ router.get('/agendamentos/:id/editar', verificarAutenticacao, (req, res) => {
 // ── Salvar edição ─────────────────────────────────────────────────────────────
 
 router.post('/agendamentos/:id/editar', verificarAutenticacao, (req, res) => {
-  const { pet_id, data, hora, status, observacoes } = req.body;
+  const { pet_id, data, hora, status, observacoes, funcionario_id } = req.body;
   const servicosIds = normalizarServicos(req.body.servicos);
   const id = req.params.id;
 
@@ -211,10 +215,10 @@ router.post('/agendamentos/:id/editar', verificarAutenticacao, (req, res) => {
     db.get(`SELECT * FROM agendamentos WHERE id = ?`, [id], (err, agendamento) => {
       db.all(`SELECT servico_id FROM agendamento_servicos WHERE agendamento_id = ?`, [id], (err, agServicos) => {
         const servicosSelecionadosIds = (agServicos || []).map(r => r.servico_id);
-        carregarFormData((pets, servicos) => {
+        carregarFormData((pets, servicos, funcionarios) => {
           res.render('agendamentos/editar', {
             usuario: req.session.usuario, paginaAtiva: 'agendamentos',
-            agendamento, pets, servicos, servicosSelecionadosIds,
+            agendamento, pets, servicos, funcionarios, servicosSelecionadosIds,
             data: agendamento.data_hora.split(' ')[0],
             hora: agendamento.data_hora.slice(11, 16),
             erro
@@ -272,9 +276,10 @@ router.post('/agendamentos/:id/editar', verificarAutenticacao, (req, res) => {
 
           const { subtotal, desconto, valorFinal } = calcularValores(servicosSel, pet);
 
+          const funcId = funcionario_id && parseInt(funcionario_id) > 0 ? parseInt(funcionario_id) : null;
           db.run(
-            `UPDATE agendamentos SET pet_id=?, cliente_id=?, data_hora=?, status=?, observacoes=?, valor=?, desconto=? WHERE id=?`,
-            [pet_id, pet.cliente_id, data_hora, status, observacoes || null, valorFinal, desconto, id],
+            `UPDATE agendamentos SET pet_id=?, cliente_id=?, data_hora=?, status=?, observacoes=?, valor=?, desconto=?, funcionario_id=? WHERE id=?`,
+            [pet_id, pet.cliente_id, data_hora, status, observacoes || null, valorFinal, desconto, funcId, id],
             (err) => {
               if (err) return renderErro('Erro ao salvar.');
 

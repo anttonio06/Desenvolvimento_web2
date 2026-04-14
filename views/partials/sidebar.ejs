@@ -35,10 +35,16 @@
     <a href="/agendamentos" class="nav-item <%= paginaAtiva === 'agendamentos' ? 'active' : '' %>">
       <i class="bi bi-calendar2-week-fill"></i> Agendamentos
     </a>
+    <% if (usuario && usuario.permissoes === 'administrador') { %>
+    <div class="sidebar-section-label">Administração</div>
+    <a href="/funcionarios" class="nav-item <%= paginaAtiva === 'funcionarios' ? 'active' : '' %>">
+      <i class="bi bi-person-badge-fill"></i> Funcionários
+    </a>
+    <% } %>
   </nav>
 
   <div class="sidebar-footer">
-    <a href="/emails" class="sidebar-user" style="text-decoration:none; cursor:pointer" title="Ver e-mails cadastrados">
+    <div class="sidebar-user">
       <div class="user-avatar">
         <i class="bi bi-person-fill"></i>
       </div>
@@ -46,7 +52,7 @@
         <div class="user-name"><%= usuario.nome %></div>
         <div class="user-role" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis"><%= usuario.email %></div>
       </div>
-    </a>
+    </div>
     <a href="/logout" class="logout-btn">
       <i class="bi bi-box-arrow-left"></i> Sair
     </a>

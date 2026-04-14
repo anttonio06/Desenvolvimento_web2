@@ -82,6 +82,24 @@
   </main>
 
   <script>
+    function mascaraTelefone(valor) {
+      var nums = valor.replace(/\D/g, '').slice(0, 11);
+      if (nums.length === 0) return '';
+      if (nums.length <= 2) return '(' + nums;
+      if (nums.length <= 7) return '(' + nums.slice(0,2) + ') ' + nums.slice(2);
+      return '(' + nums.slice(0,2) + ') ' + nums.slice(2,7) + '-' + nums.slice(7);
+    }
+
+    var inputTel = document.getElementById('telefone');
+    inputTel.addEventListener('input', function() {
+      this.value = mascaraTelefone(this.value);
+    });
+
+    // aplica máscara no valor pré-preenchido (ex: após erro de validação server-side)
+    if (inputTel.value) {
+      inputTel.value = mascaraTelefone(inputTel.value);
+    }
+
     document.getElementById('form-cadastro').addEventListener('submit', function(e) {
       var nome          = document.getElementById('nome').value.trim();
       var email         = document.getElementById('email').value.trim();
@@ -89,12 +107,20 @@
       var senha         = document.getElementById('senha').value;
       var confirmar     = document.getElementById('confirmarSenha').value;
       var erroEl        = document.getElementById('erro-campos');
+      var telPattern    = /^\(\d{2}\) \d{5}-\d{4}$/;
 
       erroEl.classList.add('d-none');
 
       if (!nome || !email || !telefone || !senha || !confirmar) {
         e.preventDefault();
         erroEl.textContent = 'Preencha todos os campos antes de continuar.';
+        erroEl.classList.remove('d-none');
+        return;
+      }
+
+      if (!telPattern.test(telefone)) {
+        e.preventDefault();
+        erroEl.textContent = 'Informe um telefone válido com 11 dígitos (ex: (11) 99999-9999).';
         erroEl.classList.remove('d-none');
         return;
       }

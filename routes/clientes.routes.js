@@ -14,6 +14,9 @@ router.get('/clientes', verificarAutenticacao, (req, res) => {
       GROUP_CONCAT(p.nome, ', ') AS nomes_pets
     FROM clientes c
     LEFT JOIN pets p ON p.cliente_id = c.id
+    WHERE c.email IS NULL
+       OR c.email = ''
+       OR c.email NOT IN (SELECT email FROM funcionarios WHERE email IS NOT NULL AND email != '')
     GROUP BY c.id
     ORDER BY c.nome ASC
   `, [], (err, clientes) => {
@@ -35,15 +38,18 @@ router.post('/clientes', verificarAutenticacao, (req, res) => {
     return res.redirect('/clientes');
   }
 
-  db.get('SELECT id FROM clientes WHERE telefone = ?', [telValido], (err, rowTel) => {
-    if (rowTel) return res.json({ ok: false, erro: 'telefone_duplicado' });
-    db.get('SELECT id FROM clientes WHERE email = ?', [emailValido], (err2, rowEmail) => {
-      if (rowEmail) return res.json({ ok: false, erro: 'email_duplicado' });
-      db.run(
-        'INSERT INTO clientes (nome, telefone, email) VALUES (?, ?, ?)',
-        [nome.trim(), telValido, emailValido],
-        (err3) => res.json({ ok: !err3 })
-      );
+  db.get('SELECT id FROM funcionarios WHERE email = ?', [emailValido], (err0, rowFunc) => {
+    if (rowFunc) return res.json({ ok: false, erro: 'email_funcionario' });
+    db.get('SELECT id FROM clientes WHERE telefone = ?', [telValido], (err, rowTel) => {
+      if (rowTel) return res.json({ ok: false, erro: 'telefone_duplicado' });
+      db.get('SELECT id FROM clientes WHERE email = ?', [emailValido], (err2, rowEmail) => {
+        if (rowEmail) return res.json({ ok: false, erro: 'email_duplicado' });
+        db.run(
+          'INSERT INTO clientes (nome, telefone, email) VALUES (?, ?, ?)',
+          [nome.trim(), telValido, emailValido],
+          (err3) => res.json({ ok: !err3 })
+        );
+      });
     });
   });
 });
@@ -68,6 +74,14 @@ router.put('/clientes/:id', verificarAutenticacao, (req, res) => {
       );
     });
   });
+});
+
+router.get('/clientes/:id/pets', verificarAutenticacao, (req, res) => {
+  db.all(
+    'SELECT id, nome, especie, raca, porte FROM pets WHERE cliente_id = ? ORDER BY nome ASC',
+    [req.params.id],
+    (err, pets) => res.json({ ok: !err, pets: err ? [] : pets })
+  );
 });
 
 router.delete('/clientes/:id', verificarAutenticacao, (req, res) => {
