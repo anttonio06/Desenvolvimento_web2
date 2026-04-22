@@ -90,10 +90,12 @@
                   <% if (u.permissoes !== 'administrador') { %>
                     <button class="btn-acao info" title="Ver agendamentos" onclick="verAgendamentos(<%= u.id %>, '<%= u.nome.replace(/'/g, "\\'") %>')"><i class="bi bi-info-circle-fill"></i></button>
                   <% } %>
-                  <button class="btn-acao" title="Ver senha" style="background:rgba(250,204,21,0.08);color:#fbbf24;border:1px solid rgba(250,204,21,0.15)"
-                    onclick="verSenha('<%= u.nome.replace(/'/g, "\\'") %>', '<%= (u.senha_texto || '').replace(/'/g, "\\'") %>')">
-                    <i class="bi bi-eye-fill"></i>
-                  </button>
+                  <% if (u.email !== 'admin@petagenda.com') { %>
+                    <button class="btn-acao" title="Ver senha" style="background:rgba(250,204,21,0.08);color:#fbbf24;border:1px solid rgba(250,204,21,0.15)"
+                      onclick="verSenha('<%= u.nome.replace(/'/g, "\\'") %>', '<%= (u.senha_texto || '').replace(/'/g, "\\'") %>')">
+                      <i class="bi bi-eye-fill"></i>
+                    </button>
+                  <% } %>
                   <% if (u.email !== 'admin@petagenda.com') { %>
                     <button class="btn-acao editar" title="Editar" onclick="abrirEditar(<%= JSON.stringify({id: u.id, nome: u.nome, telefone: u.telefone || '', ativo: u.ativo}) %>)"><i class="bi bi-pencil-fill"></i></button>
                     <button class="btn-acao excluir" title="Excluir" onclick="excluir(<%= u.id %>, '<%= u.nome.replace(/'/g, "\\'") %>')"><i class="bi bi-trash-fill"></i></button>
@@ -285,10 +287,11 @@
       var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
 
       erroEl.classList.add('d-none');
-      if (!nome)   { erroEl.textContent = 'Informe o nome.'; erroEl.classList.remove('d-none'); return; }
-      if (telefone && !telPattern.test(telefone)) { erroEl.textContent = 'Telefone inválido (ex: (11) 99999-9999).'; erroEl.classList.remove('d-none'); return; }
-      if (!email)  { erroEl.textContent = 'Informe o e-mail de acesso.'; erroEl.classList.remove('d-none'); return; }
-      if (!senha || senha.length < 6) { erroEl.textContent = 'A senha deve ter no mínimo 6 caracteres.'; erroEl.classList.remove('d-none'); return; }
+      if (!nome || !email || !senha || senha.length < 6 || (telefone && !telPattern.test(telefone))) {
+        erroEl.textContent = 'Preencha todos os campos corretamente.';
+        erroEl.classList.remove('d-none');
+        return;
+      }
 
       fetch('/funcionarios', {
         method: 'POST',
@@ -297,11 +300,8 @@
       }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.ok) {
           location.reload();
-        } else if (data.erro === 'email_duplicado') {
-          erroEl.textContent = 'Este e-mail já está em uso.';
-          erroEl.classList.remove('d-none');
         } else {
-          erroEl.textContent = 'Erro ao cadastrar. Tente novamente.';
+          erroEl.textContent = 'Preencha todos os campos corretamente.';
           erroEl.classList.remove('d-none');
         }
       });
@@ -326,9 +326,11 @@
       var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
 
       erroEl.classList.add('d-none');
-      if (!nome) { erroEl.textContent = 'Informe o nome.'; erroEl.classList.remove('d-none'); return; }
-      if (telefone && !telPattern.test(telefone)) { erroEl.textContent = 'Telefone inválido (ex: (11) 99999-9999).'; erroEl.classList.remove('d-none'); return; }
-      if (novaSenha && novaSenha.length < 6) { erroEl.textContent = 'A nova senha deve ter no mínimo 6 caracteres.'; erroEl.classList.remove('d-none'); return; }
+      if (!nome || (telefone && !telPattern.test(telefone)) || (novaSenha && novaSenha.length < 6)) {
+        erroEl.textContent = 'Preencha todos os campos corretamente.';
+        erroEl.classList.remove('d-none');
+        return;
+      }
 
       fetch('/funcionarios/' + editandoId, {
         method: 'PUT',
@@ -336,7 +338,7 @@
         body: JSON.stringify({ nome, telefone: telefone || null, ativo: parseInt(ativo), nova_senha: novaSenha || null })
       }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.ok) { location.reload(); }
-        else { erroEl.textContent = 'Erro ao salvar.'; erroEl.classList.remove('d-none'); }
+        else { erroEl.textContent = 'Preencha todos os campos corretamente.'; erroEl.classList.remove('d-none'); }
       });
     }
 

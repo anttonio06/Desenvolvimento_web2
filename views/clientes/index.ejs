@@ -78,6 +78,7 @@
           <% } %>
         </tbody>
       </table>
+
     </div>
 
   </main>
@@ -91,21 +92,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-          <div id="novo-erro-telefone" class="alert alert-danger d-none">
-            Este telefone já está cadastrado para outro cliente.
-          </div>
-          <div id="novo-erro-telefone-formato" class="alert alert-danger d-none">
-            Informe um telefone válido (ex: (11) 99999-9999).
-          </div>
-          <div id="novo-erro-email-funcionario" class="alert alert-danger d-none">
-            Este e-mail pertence a um funcionário e não pode ser usado para cliente.
-          </div>
-          <div id="novo-erro-email" class="alert alert-danger d-none">
-            Este e-mail já está cadastrado para outro cliente.
-          </div>
-          <div id="novo-erro-email-formato" class="alert alert-danger d-none">
-            Informe um e-mail válido (ex: nome@exemplo.com ou nome@exemplo.com.br).
-          </div>
+          <div id="novo-erro" class="alert alert-danger d-none"></div>
           <div class="mb-3">
             <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
             <input type="text" id="novo-nome" class="form-control" placeholder="Nome completo">
@@ -136,18 +123,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-          <div id="edit-erro-telefone" class="alert alert-danger d-none">
-            Este telefone já está cadastrado para outro cliente.
-          </div>
-          <div id="edit-erro-telefone-formato" class="alert alert-danger d-none">
-            Informe um telefone válido (ex: (11) 99999-9999).
-          </div>
-          <div id="edit-erro-email" class="alert alert-danger d-none">
-            Este e-mail já está cadastrado para outro cliente.
-          </div>
-          <div id="edit-erro-email-formato" class="alert alert-danger d-none">
-            Informe um e-mail válido (ex: nome@exemplo.com ou nome@exemplo.com.br).
-          </div>
+          <div id="edit-erro" class="alert alert-danger d-none"></div>
           <div class="mb-3">
             <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
             <input type="text" id="edit-nome" class="form-control" placeholder="Nome completo">
@@ -219,14 +195,23 @@
       this.value = mascaraTelefone(this.value);
     });
 
+    function mostrarErroNovo(msg) {
+      var el = document.getElementById('novo-erro');
+      el.textContent = msg;
+      el.classList.remove('d-none');
+    }
+
+    function mostrarErroEdit(msg) {
+      var el = document.getElementById('edit-erro');
+      el.textContent = msg;
+      el.classList.remove('d-none');
+    }
+
     document.getElementById('modalNovoCliente').addEventListener('show.bs.modal', function() {
       document.getElementById('novo-nome').value = '';
       document.getElementById('novo-telefone').value = '';
       document.getElementById('novo-email').value = '';
-      document.getElementById('novo-erro-telefone').classList.add('d-none');
-      document.getElementById('novo-erro-telefone-formato').classList.add('d-none');
-      document.getElementById('novo-erro-email').classList.add('d-none');
-      document.getElementById('novo-erro-email-formato').classList.add('d-none');
+      document.getElementById('novo-erro').classList.add('d-none');
     });
 
     function cadastrarCliente() {
@@ -236,20 +221,9 @@
       var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
       var emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
-      document.getElementById('novo-erro-telefone').classList.add('d-none');
-      document.getElementById('novo-erro-email-funcionario').classList.add('d-none');
-      document.getElementById('novo-erro-email').classList.add('d-none');
-      document.getElementById('novo-erro-email-formato').classList.add('d-none');
+      document.getElementById('novo-erro').classList.add('d-none');
 
-      if (!nome) { alert('Informe o nome do cliente.'); return; }
-      if (!telefone || !telPattern.test(telefone)) {
-        document.getElementById('novo-erro-telefone-formato').classList.remove('d-none');
-        return;
-      }
-      if (!email || !emailPattern.test(email)) {
-        document.getElementById('novo-erro-email-formato').classList.remove('d-none');
-        return;
-      }
+      if (!nome || !telefone || !telPattern.test(telefone) || !email || !emailPattern.test(email)) return mostrarErroNovo('Preencha todos os campos corretamente.');
 
       fetch('/clientes', {
         method: 'POST',
@@ -258,15 +232,8 @@
       }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.ok) {
           location.reload();
-        } else if (data.erro === 'telefone_duplicado') {
-          document.getElementById('novo-telefone').value = '';
-          document.getElementById('novo-erro-telefone').classList.remove('d-none');
-        } else if (data.erro === 'email_funcionario') {
-          document.getElementById('novo-email').value = '';
-          document.getElementById('novo-erro-email-funcionario').classList.remove('d-none');
-        } else if (data.erro === 'email_duplicado') {
-          document.getElementById('novo-email').value = '';
-          document.getElementById('novo-erro-email').classList.remove('d-none');
+        } else {
+          mostrarErroNovo('Preencha todos os campos corretamente.');
         }
       });
     }
@@ -283,10 +250,7 @@
       document.getElementById('edit-nome').value = cliente.nome;
       document.getElementById('edit-telefone').value = mascaraTelefone(cliente.telefone);
       document.getElementById('edit-email').value = cliente.email;
-      document.getElementById('edit-erro-telefone').classList.add('d-none');
-      document.getElementById('edit-erro-telefone-formato').classList.add('d-none');
-      document.getElementById('edit-erro-email').classList.add('d-none');
-      document.getElementById('edit-erro-email-formato').classList.add('d-none');
+      document.getElementById('edit-erro').classList.add('d-none');
 
       var petsLista = document.getElementById('edit-pets-lista');
       petsLista.innerHTML = '<div style="color:#4b5563;font-size:0.82rem;padding:6px 0">Carregando...</div>';
@@ -301,11 +265,10 @@
             petsLista.innerHTML = '<div style="font-size:0.82rem;color:#4b5563;padding:6px 0"><i class="bi bi-heart" style="margin-right:5px"></i>Nenhum pet cadastrado.</div>';
             return;
           }
-          var porteLabel = { pequeno: 'Pequeno', medio: 'Médio', grande: 'Grande' };
           petsLista.innerHTML = pets.map(function(p) {
             var detalhes = [p.especie];
             if (p.raca) detalhes.push(p.raca);
-            if (p.porte) detalhes.push(porteLabel[p.porte] || p.porte);
+            if (p.porte) detalhes.push(p.porte);
             return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.12);border-radius:10px;margin-bottom:6px">'
               + '<i class="bi bi-heart-fill" style="color:#10b981;font-size:0.75rem;flex-shrink:0"></i>'
               + '<div>'
@@ -324,35 +287,19 @@
       var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
       var emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
 
-      document.getElementById('edit-erro-telefone').classList.add('d-none');
-      document.getElementById('edit-erro-telefone-formato').classList.add('d-none');
-      document.getElementById('edit-erro-email').classList.add('d-none');
-      document.getElementById('edit-erro-email-formato').classList.add('d-none');
+      document.getElementById('edit-erro').classList.add('d-none');
 
-      if (!nome) { alert('Informe o nome do cliente.'); return; }
-      if (!telefone || !telPattern.test(telefone)) {
-        document.getElementById('edit-erro-telefone-formato').classList.remove('d-none');
-        return;
-      }
-      if (!email || !emailPattern.test(email)) {
-        document.getElementById('edit-erro-email-formato').classList.remove('d-none');
-        return;
-      }
+      if (!nome || !telefone || !telPattern.test(telefone) || !email || !emailPattern.test(email)) return mostrarErroEdit('Preencha todos os campos corretamente.');
+
       fetch('/clientes/' + clienteEditandoId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome: document.getElementById('edit-nome').value,
-          telefone: document.getElementById('edit-telefone').value,
-          email: document.getElementById('edit-email').value
-        })
+        body: JSON.stringify({ nome: nome, telefone: telefone, email: email })
       }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.ok) {
           location.reload();
-        } else if (data.erro === 'telefone_duplicado') {
-          document.getElementById('edit-erro-telefone').classList.remove('d-none');
-        } else if (data.erro === 'email_duplicado') {
-          document.getElementById('edit-erro-email').classList.remove('d-none');
+        } else {
+          mostrarErroEdit('Preencha todos os campos corretamente.');
         }
       });
     }

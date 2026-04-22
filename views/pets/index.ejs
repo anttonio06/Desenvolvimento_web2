@@ -71,6 +71,7 @@
           <% } %>
         </tbody>
       </table>
+
     </div>
 
   </main>
@@ -78,54 +79,53 @@
   <!-- Modal Novo Pet -->
   <div class="modal fade" id="modalNovoPet" tabindex="-1" aria-labelledby="modalNovoPetLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <form method="POST" action="/pets">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalNovoPetLabel"><i class="bi bi-heart-fill me-2"></i>Novo Pet</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalNovoPetLabel"><i class="bi bi-heart-fill me-2"></i>Novo Pet</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="novo-erro-pet" class="alert alert-danger d-none"></div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
+            <input type="text" id="novo-nome-pet" class="form-control" placeholder="Nome do pet">
           </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Nome <span class="text-danger">*</span></label>
-              <input type="text" name="nome" class="form-control" placeholder="Nome do pet" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Espécie <span class="text-danger">*</span></label>
-              <select name="especie" class="form-select" required>
-                <option value="">Selecione...</option>
-                <option value="cao">🐶 Cão</option>
-                <option value="gato">🐱 Gato</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Raça <span class="text-danger">*</span></label>
-              <input type="text" name="raca" class="form-control" placeholder="Ex: Labrador, Poodle..." required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Porte <span class="text-danger">*</span></label>
-              <select name="porte" class="form-select" required>
-                <option value="">Selecione...</option>
-                <option value="Pequeno">Pequeno</option>
-                <option value="Médio">Médio</option>
-                <option value="Grande">Grande</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Tutor (Cliente) <span class="text-danger">*</span></label>
-              <select name="cliente_id" class="form-select" required>
-                <option value="">Selecione...</option>
-                <% clientes.forEach(function(c) { %>
-                  <option value="<%= c.id %>"><%= c.nome %></option>
-                <% }) %>
-              </select>
-            </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Espécie <span class="text-danger">*</span></label>
+            <select id="novo-especie-pet" class="form-select">
+              <option value="">Selecione...</option>
+              <option value="cao">🐶 Cão</option>
+              <option value="gato">🐱 Gato</option>
+            </select>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-success">Cadastrar</button>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Raça <span class="text-danger">*</span></label>
+            <input type="text" id="novo-raca-pet" class="form-control" placeholder="Ex: Labrador, Poodle...">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Porte <span class="text-danger">*</span></label>
+            <select id="novo-porte-pet" class="form-select">
+              <option value="">Selecione...</option>
+              <option value="Pequeno">Pequeno</option>
+              <option value="Médio">Médio</option>
+              <option value="Grande">Grande</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Tutor (Cliente) <span class="text-danger">*</span></label>
+            <select id="novo-cliente-pet" class="form-select">
+              <option value="">Selecione...</option>
+              <% clientes.forEach(function(c) { %>
+                <option value="<%= c.id %>"><%= c.nome %></option>
+              <% }) %>
+            </select>
           </div>
         </div>
-      </form>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" onclick="cadastrarPet()">Cadastrar</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -209,6 +209,46 @@
     var _urlExcluir = null;
     var _modalConfirmar = null;
 
+    document.getElementById('modalNovoPet').addEventListener('show.bs.modal', function() {
+      document.getElementById('novo-nome-pet').value = '';
+      document.getElementById('novo-especie-pet').value = '';
+      document.getElementById('novo-raca-pet').value = '';
+      document.getElementById('novo-porte-pet').value = '';
+      document.getElementById('novo-cliente-pet').value = '';
+      document.getElementById('novo-erro-pet').classList.add('d-none');
+    });
+
+    function cadastrarPet() {
+      var nome = document.getElementById('novo-nome-pet').value.trim();
+      var especie = document.getElementById('novo-especie-pet').value;
+      var raca = document.getElementById('novo-raca-pet').value.trim();
+      var porte = document.getElementById('novo-porte-pet').value;
+      var cliente_id = document.getElementById('novo-cliente-pet').value;
+
+      document.getElementById('novo-erro-pet').classList.add('d-none');
+
+      if (!nome || !especie || !raca || !porte || !cliente_id) {
+        var el = document.getElementById('novo-erro-pet');
+        el.textContent = 'Preencha todos os campos corretamente.';
+        el.classList.remove('d-none');
+        return;
+      }
+
+      fetch('/pets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: nome, especie: especie, raca: raca, porte: porte, cliente_id: cliente_id })
+      }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.ok) {
+          location.reload();
+        } else {
+          var el = document.getElementById('novo-erro-pet');
+          el.textContent = 'Preencha todos os campos corretamente.';
+          el.classList.remove('d-none');
+        }
+      });
+    }
+
     document.getElementById('busca-pet').addEventListener('input', function() {
       var termo = this.value.toLowerCase();
       document.querySelectorAll('#tabela-pets tbody tr').forEach(function(tr) {
@@ -242,11 +282,11 @@
 
       document.getElementById('edit-erro-pet').classList.add('d-none');
 
-      if (!nome) { mostrarErroPet('Informe o nome do pet.'); return; }
-      if (!especie) { mostrarErroPet('Selecione a espécie.'); return; }
-      if (!raca) { mostrarErroPet('Informe a raça do pet.'); return; }
-      if (!porte) { mostrarErroPet('Selecione o porte.'); return; }
-      if (!cliente_id) { mostrarErroPet('Selecione o tutor.'); return; }
+      if (!nome) { mostrarErroPet('Preencha todos os campos corretamente.'); return; }
+      if (!especie) { mostrarErroPet('Preencha todos os campos corretamente.'); return; }
+      if (!raca) { mostrarErroPet('Preencha todos os campos corretamente.'); return; }
+      if (!porte) { mostrarErroPet('Preencha todos os campos corretamente.'); return; }
+      if (!cliente_id) { mostrarErroPet('Preencha todos os campos corretamente.'); return; }
 
       fetch('/pets/' + petEditandoId, {
         method: 'PUT',

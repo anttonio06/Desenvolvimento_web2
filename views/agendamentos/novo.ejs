@@ -493,7 +493,26 @@
       const hora    = document.getElementById('hora').value;
       const servicos = document.querySelectorAll('input[name="servicos"]:checked');
 
-      if (!petId || !data || !hora || servicos.length === 0) { e.preventDefault(); return; }
+      if (!petId) {
+        e.preventDefault();
+        mostrarAviso('Pet não selecionado', 'Selecione um pet cadastrado para continuar.');
+        return;
+      }
+      if (servicos.length === 0) {
+        e.preventDefault();
+        mostrarAviso('Nenhum serviço selecionado', 'Selecione ao menos um serviço para continuar.');
+        return;
+      }
+      if (!data) {
+        e.preventDefault();
+        mostrarAviso('Data não informada', 'Informe a data do agendamento.');
+        return;
+      }
+      if (!hora) {
+        e.preventDefault();
+        mostrarAviso('Horário não informado', 'Informe o horário do agendamento.');
+        return;
+      }
 
       const h = parseInt(hora.split(':')[0]);
       if (h < 8 || h >= 18) {

@@ -1,14 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const db = require('../database/db');
+const crypto = require('crypto');
+const { dbGet, dbRun } = require('../database/db-promise');
 
 const router = express.Router();
 
 router.get('/login', (req, res) => {
-  if (req.session.usuario) {
-    return res.redirect('/dashboard');
-  }
-
+  if (req.session.usuario) return res.redirect('/dashboard');
   res.render('autenticacao/login', {
     title: 'Login - PetAgenda',
     erro: null,
@@ -17,7 +15,7 @@ router.get('/login', (req, res) => {
   });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, senha } = req.body;
 
   if (!email || !senha) {
@@ -29,21 +27,15 @@ router.post('/login', (req, res) => {
     });
   }
 
-  db.get('SELECT * FROM usuarios WHERE email = ?', [email], async (err, usuario) => {
-    if (err) {
-      console.log(err);
-      return res.render('autenticacao/login', {
-        title: 'Login - PetAgenda',
-        erro: 'Erro interno no servidor.',
-        sucesso: null, cadastrado: false
-      });
-    }
+  try {
+    const usuario = await dbGet('SELECT * FROM usuarios WHERE email = ?', [email]);
 
     if (!usuario) {
       return res.render('autenticacao/login', {
         title: 'Login - PetAgenda',
         erro: 'Email ou senha inválidos.',
-        sucesso: null, cadastrado: false
+        sucesso: null,
+        cadastrado: false
       });
     }
 
@@ -53,7 +45,8 @@ router.post('/login', (req, res) => {
       return res.render('autenticacao/login', {
         title: 'Login - PetAgenda',
         erro: 'Email ou senha inválidos.',
-        sucesso: null, cadastrado: false
+        sucesso: null,
+        cadastrado: false
       });
     }
 
@@ -65,7 +58,15 @@ router.post('/login', (req, res) => {
     };
 
     res.redirect('/dashboard');
-  });
+  } catch (err) {
+    console.error('Erro no login:', err);
+    res.render('autenticacao/login', {
+      title: 'Login - PetAgenda',
+      erro: 'Erro interno no servidor.',
+      sucesso: null,
+      cadastrado: false
+    });
+  }
 });
 
 router.get('/logout', (req, res) => {
@@ -75,6 +76,7 @@ router.get('/logout', (req, res) => {
 });
 
 router.get('/esqueci-senha', (req, res) => {
+  if (req.session.usuario) return res.redirect('/dashboard');
   res.render('autenticacao/esqueci-senha', {
     title: 'Esqueci minha senha',
     erro: null,
@@ -82,22 +84,109 @@ router.get('/esqueci-senha', (req, res) => {
   });
 });
 
-router.post('/esqueci-senha', (req, res) => {
+router.post('/esqueci-senha', async (req, res) => {
   const { email } = req.body;
 
-  if (!email) {
-    return res.render('autenticacao/esqueci-senha', {
+  const renderView = (erro, sucesso) =>
+    res.render('autenticacao/esqueci-senha', {
       title: 'Esqueci minha senha',
-      erro: 'Informe o email.',
-      sucesso: null
+      erro, sucesso
     });
+
+  if (!email || !email.trim()) {
+    return renderView('Informe o e-mail.', null);
   }
 
-  res.render('autenticacao/esqueci-senha', {
-    title: 'Esqueci minha senha',
-    erro: null,
-    sucesso: 'Se o email existir, enviaremos instruções para redefinir a senha.'
-  });
+  try {
+    const usuario = await dbGet('SELECT id FROM usuarios WHERE email = ?', [email.trim()]);
+
+    if (usuario) {
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiry = Date.now() + 60 * 60 * 1000;
+      await dbRun(
+        'UPDATE usuarios SET reset_token = ?, reset_token_expiry = ? WHERE id = ?',
+        [token, expiry, usuario.id]
+      );
+    }
+  } catch (err) {
+    console.error('Erro ao gerar reset de senha:', err);
+  }
+
+  return renderView(null, 'E-mail enviado! Verifique sua caixa de entrada.');
+});
+
+router.get('/redefinir-senha/:token', async (req, res) => {
+  try {
+    const usuario = await dbGet(
+      'SELECT id FROM usuarios WHERE reset_token = ? AND reset_token_expiry > ?',
+      [req.params.token, Date.now()]
+    );
+
+    if (!usuario) {
+      return res.render('autenticacao/redefinir-senha', {
+        title: 'Redefinir Senha',
+        token: null,
+        erro: 'Link inválido ou expirado. Solicite um novo link.',
+        sucesso: null
+      });
+    }
+
+    res.render('autenticacao/redefinir-senha', {
+      title: 'Redefinir Senha',
+      token: req.params.token,
+      erro: null,
+      sucesso: null
+    });
+  } catch (err) {
+    console.error('Erro ao validar token:', err);
+    res.redirect('/esqueci-senha');
+  }
+});
+
+router.post('/redefinir-senha/:token', async (req, res) => {
+  const { nova_senha, confirmar_senha } = req.body;
+
+  const renderView = (erro, sucesso) =>
+    res.render('autenticacao/redefinir-senha', {
+      title: 'Redefinir Senha',
+      token: req.params.token,
+      erro, sucesso
+    });
+
+  if (!nova_senha || nova_senha.length < 6) {
+    return renderView('A senha deve ter no mínimo 6 caracteres.', null);
+  }
+
+  if (nova_senha !== confirmar_senha) {
+    return renderView('As senhas não conferem.', null);
+  }
+
+  try {
+    const usuario = await dbGet(
+      'SELECT id FROM usuarios WHERE reset_token = ? AND reset_token_expiry > ?',
+      [req.params.token, Date.now()]
+    );
+
+    if (!usuario) {
+      return renderView('Link inválido ou expirado. Solicite um novo link.', null);
+    }
+
+    const hash = await bcrypt.hash(nova_senha, 10);
+    await dbRun(
+      'UPDATE usuarios SET senha = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?',
+      [hash, usuario.id]
+    );
+
+    res.render('autenticacao/redefinir-senha', {
+      title: 'Redefinir Senha',
+      token: null,
+      erro: null,
+      sucesso: 'Senha redefinida com sucesso! Você já pode fazer login.'
+    });
+  } catch (err) {
+    console.error('Erro ao redefinir senha:', err);
+    renderView('Erro interno. Tente novamente.', null);
+  }
 });
 
 router.get('/cadastro', (req, res) => res.redirect('/login'));

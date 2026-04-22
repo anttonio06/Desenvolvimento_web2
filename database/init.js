@@ -52,7 +52,12 @@ db.serialize(async () => {
   db.run(`ALTER TABLE servicos ADD COLUMN preco_medio REAL DEFAULT 0`, () => {});
   db.run(`ALTER TABLE servicos ADD COLUMN preco_grande REAL DEFAULT 0`, () => {});
 
+  // Mantém a coluna por compatibilidade com bancos existentes, mas não é mais usada
   db.run(`ALTER TABLE usuarios ADD COLUMN senha_texto TEXT`, () => {});
+
+  // Colunas para reset de senha
+  db.run(`ALTER TABLE usuarios ADD COLUMN reset_token TEXT`, () => {});
+  db.run(`ALTER TABLE usuarios ADD COLUMN reset_token_expiry INTEGER`, () => {});
 
   db.run(`ALTER TABLE agendamentos ADD COLUMN observacoes TEXT`, () => {});
   db.run(`ALTER TABLE agendamentos ADD COLUMN valor REAL`, () => {});
@@ -132,7 +137,6 @@ db.serialize(async () => {
         (insertErr) => {
           if (insertErr) {
             console.error('Erro ao inserir usuário inicial:', insertErr.message);
-          } else {
           }
         }
       );

@@ -55,7 +55,7 @@
 
     <div class="page-header">
       <div>
-        <div class="page-title"><i class="bi bi-pencil-square"></i> Editar Agendamento <span style="color:#4b5563; font-weight:400;">#<%= agendamento.id %></span></div>
+        <div class="page-title"><i class="bi bi-pencil-square"></i> Editar Agendamento</div>
         <div class="page-subtitle">Altere os dados do agendamento</div>
       </div>
       <a href="/agendamentos" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
@@ -208,7 +208,6 @@
 
   <script>
     const hoje = new Date().toISOString().split('T')[0];
-    document.getElementById('data').min = hoje;
     let porteAtual = '';
 
     function fmt(val) { return 'R$ ' + val.toFixed(2).replace('.', ','); }
@@ -348,7 +347,32 @@
     });
 
     document.getElementById('form-agendamento').addEventListener('submit', function(e) {
-      const hora = document.getElementById('hora').value;
+      const petId = document.getElementById('pet_id').value;
+      const data  = document.getElementById('data').value;
+      const hora  = document.getElementById('hora').value;
+      const servicos = document.querySelectorAll('input[name="servicos"]:checked');
+
+      if (!petId) {
+        e.preventDefault();
+        mostrarAviso('Pet não selecionado', 'Selecione um pet cadastrado para continuar.');
+        return;
+      }
+      if (servicos.length === 0) {
+        e.preventDefault();
+        mostrarAviso('Nenhum serviço selecionado', 'Selecione ao menos um serviço para continuar.');
+        return;
+      }
+      if (!data) {
+        e.preventDefault();
+        mostrarAviso('Data não informada', 'Informe a data do agendamento.');
+        return;
+      }
+      if (!hora) {
+        e.preventDefault();
+        mostrarAviso('Horário não informado', 'Informe o horário do agendamento.');
+        return;
+      }
+
       const h = parseInt(hora.split(':')[0]);
       if (h < 8 || h >= 18) {
         e.preventDefault();
@@ -357,7 +381,6 @@
         return;
       }
 
-      const servicos = document.querySelectorAll('input[name="servicos"]:checked');
       const nomesSel = [...servicos].map(c => c.dataset.nome.toLowerCase().trim());
       const temBanho = nomesSel.includes('banho');
       if ((nomesSel.includes('tosa') || nomesSel.includes('hidratação')) && !temBanho) {

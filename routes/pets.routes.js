@@ -1,66 +1,87 @@
 const express = require('express');
-const db = require('../database/db');
+const { dbGet, dbAll, dbRun, dbTransaction } = require('../database/db-promise');
 const { verificarAutenticacao } = require('../middleware/controleLogin.middleware');
 
 const router = express.Router();
 
-router.get('/pets', verificarAutenticacao, (req, res) => {
-  db.all(`
-    SELECT p.*, c.nome AS cliente_nome
-    FROM pets p
-    LEFT JOIN clientes c ON p.cliente_id = c.id
-    ORDER BY p.nome ASC
-  `, [], (err, pets) => {
-    db.all('SELECT id, nome FROM clientes ORDER BY nome ASC', [], (err2, clientes) => {
-      res.render('pets/index', {
-        usuario: req.session.usuario,
-        paginaAtiva: 'pets',
-        pets: err ? [] : pets,
-        clientes: err2 ? [] : clientes
-      });
+router.get('/pets', verificarAutenticacao, async (req, res) => {
+  try {
+    const [pets, clientes] = await Promise.all([
+      dbAll(`
+        SELECT p.*, c.nome AS cliente_nome
+        FROM pets p
+        LEFT JOIN clientes c ON p.cliente_id = c.id
+        ORDER BY p.nome ASC
+      `),
+      dbAll('SELECT id, nome FROM clientes ORDER BY nome ASC')
+    ]);
+    res.render('pets/index', {
+      usuario: req.session.usuario,
+      paginaAtiva: 'pets',
+      pets: pets || [],
+      clientes: clientes || []
     });
-  });
-});
-
-router.post('/pets', verificarAutenticacao, (req, res) => {
-  const { nome, especie, raca, porte, cliente_id } = req.body;
-  if (!nome || !nome.trim() || !especie || !raca || !porte || !cliente_id) {
-    return res.redirect('/pets');
+  } catch (err) {
+    console.error('Erro ao listar pets:', err);
+    res.render('pets/index', {
+      usuario: req.session.usuario,
+      paginaAtiva: 'pets',
+      pets: [],
+      clientes: []
+    });
   }
-  db.run(
-    'INSERT INTO pets (nome, especie, raca, porte, cliente_id) VALUES (?, ?, ?, ?, ?)',
-    [nome.trim(), especie, raca || null, porte || null, cliente_id || null],
-    (err) => {
-      res.redirect('/pets');
-    }
-  );
 });
 
-router.put('/pets/:id', verificarAutenticacao, (req, res) => {
+router.post('/pets', verificarAutenticacao, async (req, res) => {
   const { nome, especie, raca, porte, cliente_id } = req.body;
-  if (!nome || !nome.trim() || !especie || !raca || !porte || !cliente_id) {
+  if (!nome || !nome.trim() || !especie || !raca || !raca.trim() || !porte || !cliente_id) {
     return res.json({ ok: false, erro: 'Campos obrigatórios faltando' });
   }
-  db.run(
-    'UPDATE pets SET nome = ?, especie = ?, raca = ?, porte = ?, cliente_id = ? WHERE id = ?',
-    [nome.trim(), especie, raca || null, porte || null, cliente_id || null, req.params.id],
-    (err) => res.json({ ok: !err })
-  );
+  try {
+    await dbRun(
+      'INSERT INTO pets (nome, especie, raca, porte, cliente_id) VALUES (?, ?, ?, ?, ?)',
+      [nome.trim(), especie, raca || null, porte || null, cliente_id || null]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Erro ao criar pet:', err);
+    res.json({ ok: false });
+  }
 });
 
-router.delete('/pets/:id', verificarAutenticacao, (req, res) => {
+router.put('/pets/:id', verificarAutenticacao, async (req, res) => {
+  const { nome, especie, raca, porte, cliente_id } = req.body;
+  if (!nome || !nome.trim() || !especie || !raca || !raca.trim() || !porte || !cliente_id) {
+    return res.json({ ok: false, erro: 'Campos obrigatórios faltando' });
+  }
+  try {
+    await dbRun(
+      'UPDATE pets SET nome = ?, especie = ?, raca = ?, porte = ?, cliente_id = ? WHERE id = ?',
+      [nome.trim(), especie, raca || null, porte || null, cliente_id || null, req.params.id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Erro ao editar pet:', err);
+    res.json({ ok: false });
+  }
+});
+
+router.delete('/pets/:id', verificarAutenticacao, async (req, res) => {
   const id = req.params.id;
-  db.run(
-    'DELETE FROM agendamento_servicos WHERE agendamento_id IN (SELECT id FROM agendamentos WHERE pet_id = ?)',
-    [id], (err1) => {
-    if (err1) return res.json({ ok: false });
-    db.run('DELETE FROM agendamentos WHERE pet_id = ?', [id], (err2) => {
-      if (err2) return res.json({ ok: false });
-      db.run('DELETE FROM pets WHERE id = ?', [id], (err3) => {
-        res.json({ ok: !err3 });
-      });
+  try {
+    await dbTransaction(async () => {
+      await dbRun(
+        'DELETE FROM agendamento_servicos WHERE agendamento_id IN (SELECT id FROM agendamentos WHERE pet_id = ?)',
+        [id]
+      );
+      await dbRun('DELETE FROM agendamentos WHERE pet_id = ?', [id]);
+      await dbRun('DELETE FROM pets WHERE id = ?', [id]);
     });
-  });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Erro ao excluir pet:', err);
+    res.json({ ok: false });
+  }
 });
 
 module.exports = router;

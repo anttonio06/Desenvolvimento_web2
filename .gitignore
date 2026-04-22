@@ -1,2 +1,4 @@
 node_modules/
 database/sessions.sqlite
+database/petagenda.sqlite
+.env
