@@ -16,6 +16,13 @@
   <main class="main-content">
 
 
+    <% if (sucesso === 'editado') { %>
+      <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> Cliente atualizado com sucesso!
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+
     <div class="page-header">
       <div>
         <div class="page-title"><i class="bi bi-people-fill"></i> Clientes</div>
@@ -219,11 +226,15 @@
       var telefone = document.getElementById('novo-telefone').value.trim();
       var email = document.getElementById('novo-email').value.trim();
       var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
-      var emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
+      var emailPattern = /^[^\s@]+@[^\s@]+\.(com|com\.br|net|org)$/;
 
       document.getElementById('novo-erro').classList.add('d-none');
 
-      if (!nome || !telefone || !telPattern.test(telefone) || !email || !emailPattern.test(email)) return mostrarErroNovo('Preencha todos os campos corretamente.');
+      if (!nome) return mostrarErroNovo('Informe o nome do cliente.');
+      if (!telefone) return mostrarErroNovo('Informe o telefone do cliente.');
+      if (!telPattern.test(telefone)) return mostrarErroNovo('Telefone inválido. Use o formato (XX) XXXXX-XXXX.');
+      if (!email) return mostrarErroNovo('Informe o e-mail do cliente.');
+      if (!emailPattern.test(email)) return mostrarErroNovo('E-mail inválido. Use um e-mail terminado em .com, .com.br, .net ou .org.');
 
       fetch('/clientes', {
         method: 'POST',
@@ -232,8 +243,12 @@
       }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.ok) {
           location.reload();
+        } else if (data.erro === 'telefone_duplicado') {
+          mostrarErroNovo('Esse telefone já está cadastrado para outro cliente.');
+        } else if (data.erro === 'email_duplicado') {
+          mostrarErroNovo('Esse e-mail já está cadastrado para outro cliente.');
         } else {
-          mostrarErroNovo('Preencha todos os campos corretamente.');
+          mostrarErroNovo('Erro ao cadastrar. Tente novamente.');
         }
       });
     }
@@ -285,11 +300,15 @@
       var telefone = document.getElementById('edit-telefone').value.trim();
       var email = document.getElementById('edit-email').value.trim();
       var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
-      var emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
+      var emailPattern = /^[^\s@]+@[^\s@]+\.(com|com\.br|net|org)$/;
 
       document.getElementById('edit-erro').classList.add('d-none');
 
-      if (!nome || !telefone || !telPattern.test(telefone) || !email || !emailPattern.test(email)) return mostrarErroEdit('Preencha todos os campos corretamente.');
+      if (!nome) return mostrarErroEdit('Informe o nome do cliente.');
+      if (!telefone) return mostrarErroEdit('Informe o telefone do cliente.');
+      if (!telPattern.test(telefone)) return mostrarErroEdit('Telefone inválido. Use o formato (XX) XXXXX-XXXX.');
+      if (!email) return mostrarErroEdit('Informe o e-mail do cliente.');
+      if (!emailPattern.test(email)) return mostrarErroEdit('E-mail inválido. Use um e-mail terminado em .com, .com.br, .net ou .org.');
 
       fetch('/clientes/' + clienteEditandoId, {
         method: 'PUT',
@@ -297,9 +316,13 @@
         body: JSON.stringify({ nome: nome, telefone: telefone, email: email })
       }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.ok) {
-          location.reload();
+          location.href = '/clientes?sucesso=editado';
+        } else if (data.erro === 'telefone_duplicado') {
+          mostrarErroEdit('Esse telefone já está cadastrado para outro cliente.');
+        } else if (data.erro === 'email_duplicado') {
+          mostrarErroEdit('Esse e-mail já está cadastrado para outro cliente.');
         } else {
-          mostrarErroEdit('Preencha todos os campos corretamente.');
+          mostrarErroEdit('Erro ao salvar. Tente novamente.');
         }
       });
     }

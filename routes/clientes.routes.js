@@ -4,8 +4,10 @@ const { verificarAutenticacao } = require('../middleware/controleLogin.middlewar
 
 const router = express.Router();
 
+const capitalize = str => str.trim().split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : '').join(' ');
+
 const telPattern = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
-const emailPattern = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/;
+const emailPattern = /^[^\s@]+@[^\s@]+\.(com|com\.br|net|org)$/;
 
 router.get('/clientes', verificarAutenticacao, async (req, res) => {
   try {
@@ -22,7 +24,8 @@ router.get('/clientes', verificarAutenticacao, async (req, res) => {
       usuario: req.session.usuario,
       paginaAtiva: 'clientes',
       clientes: clientes || [],
-      erro: req.query.erro || null
+      erro: req.query.erro || null,
+      sucesso: req.query.sucesso || null
     });
   } catch (err) {
     console.error('Erro ao listar clientes:', err);
@@ -30,7 +33,8 @@ router.get('/clientes', verificarAutenticacao, async (req, res) => {
       usuario: req.session.usuario,
       paginaAtiva: 'clientes',
       clientes: [],
-      erro: null
+      erro: null,
+      sucesso: null
     });
   }
 });
@@ -51,7 +55,7 @@ router.post('/clientes', verificarAutenticacao, async (req, res) => {
     const dupEmail = await dbGet('SELECT id FROM clientes WHERE email = ?', [emailValido]);
     if (dupEmail) return res.json({ ok: false, erro: 'email_duplicado' });
 
-    await dbRun('INSERT INTO clientes (nome, telefone, email) VALUES (?, ?, ?)', [nome.trim(), telValido, emailValido]);
+    await dbRun('INSERT INTO clientes (nome, telefone, email) VALUES (?, ?, ?)', [capitalize(nome), telValido, emailValido]);
     res.json({ ok: true });
   } catch (err) {
     console.error('Erro ao criar cliente:', err);
@@ -75,7 +79,7 @@ router.put('/clientes/:id', verificarAutenticacao, async (req, res) => {
     const dupEmail = await dbGet('SELECT id FROM clientes WHERE email = ? AND id != ?', [emailValido, req.params.id]);
     if (dupEmail) return res.json({ ok: false, erro: 'email_duplicado' });
 
-    await dbRun('UPDATE clientes SET nome = ?, telefone = ?, email = ? WHERE id = ?', [nome.trim(), telValido, emailValido, req.params.id]);
+    await dbRun('UPDATE clientes SET nome = ?, telefone = ?, email = ? WHERE id = ?', [capitalize(nome), telValido, emailValido, req.params.id]);
     res.json({ ok: true });
   } catch (err) {
     console.error('Erro ao editar cliente:', err);

@@ -13,7 +13,7 @@ async function carregarFormData() {
       FROM pets p LEFT JOIN clientes c ON p.cliente_id = c.id ORDER BY p.nome ASC
     `),
     dbAll('SELECT * FROM servicos ORDER BY nome ASC'),
-    dbAll('SELECT * FROM funcionarios WHERE ativo = 1 ORDER BY nome ASC')
+    dbAll('SELECT f.* FROM funcionarios f INNER JOIN usuarios u ON u.id = f.usuario_id WHERE f.ativo = 1 ORDER BY f.nome ASC')
   ]);
   return { pets: pets || [], servicos: servicos || [], funcionarios: funcionarios || [] };
 }
@@ -118,12 +118,12 @@ router.post('/agendamentos', verificarAutenticacao, async (req, res) => {
     });
   };
 
-  if (!pet_id || !data || !hora || servicosIds.length === 0) {
-    return renderErro('Preencha todos os campos corretamente.');
-  }
+  if (!pet_id) return renderErro('Selecione o pet.');
+  if (servicosIds.length === 0) return renderErro('Selecione ao menos um serviço.');
+  if (!data || !hora) return renderErro('Informe a data e o horário do agendamento.');
 
   const hoje = new Date().toISOString().split('T')[0];
-  if (data < hoje) return renderErro('Preencha todos os campos corretamente.');
+  if (data < hoje) return renderErro('A data do agendamento não pode ser no passado.');
 
   const data_hora = `${data} ${hora}:00`;
   const slotHora = `${data} ${hora.split(':')[0]}`;
@@ -236,9 +236,10 @@ router.post('/agendamentos/:id/editar', verificarAutenticacao, async (req, res) 
     });
   };
 
-  if (!pet_id || !data || !hora || !status || servicosIds.length === 0) {
-    return renderErro('Selecione o pet, ao menos um serviço, data e horário.');
-  }
+  if (!pet_id) return renderErro('Selecione o pet.');
+  if (servicosIds.length === 0) return renderErro('Selecione ao menos um serviço.');
+  if (!data || !hora) return renderErro('Informe a data e o horário do agendamento.');
+  if (!status) return renderErro('Selecione o status do agendamento.');
 
   const data_hora = `${data} ${hora}:00`;
   const slotHora = `${data} ${hora.split(':')[0]}`;

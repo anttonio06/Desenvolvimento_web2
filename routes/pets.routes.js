@@ -4,6 +4,8 @@ const { verificarAutenticacao } = require('../middleware/controleLogin.middlewar
 
 const router = express.Router();
 
+const capitalize = str => str.trim().split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : '').join(' ');
+
 router.get('/pets', verificarAutenticacao, async (req, res) => {
   try {
     const [pets, clientes] = await Promise.all([
@@ -19,7 +21,8 @@ router.get('/pets', verificarAutenticacao, async (req, res) => {
       usuario: req.session.usuario,
       paginaAtiva: 'pets',
       pets: pets || [],
-      clientes: clientes || []
+      clientes: clientes || [],
+      sucesso: req.query.sucesso || null
     });
   } catch (err) {
     console.error('Erro ao listar pets:', err);
@@ -27,7 +30,8 @@ router.get('/pets', verificarAutenticacao, async (req, res) => {
       usuario: req.session.usuario,
       paginaAtiva: 'pets',
       pets: [],
-      clientes: []
+      clientes: [],
+      sucesso: null
     });
   }
 });
@@ -40,7 +44,7 @@ router.post('/pets', verificarAutenticacao, async (req, res) => {
   try {
     await dbRun(
       'INSERT INTO pets (nome, especie, raca, porte, cliente_id) VALUES (?, ?, ?, ?, ?)',
-      [nome.trim(), especie, raca || null, porte || null, cliente_id || null]
+      [capitalize(nome), especie, raca ? capitalize(raca) : null, porte || null, cliente_id || null]
     );
     res.json({ ok: true });
   } catch (err) {
@@ -57,7 +61,7 @@ router.put('/pets/:id', verificarAutenticacao, async (req, res) => {
   try {
     await dbRun(
       'UPDATE pets SET nome = ?, especie = ?, raca = ?, porte = ?, cliente_id = ? WHERE id = ?',
-      [nome.trim(), especie, raca || null, porte || null, cliente_id || null, req.params.id]
+      [capitalize(nome), especie, raca ? capitalize(raca) : null, porte || null, cliente_id || null, req.params.id]
     );
     res.json({ ok: true });
   } catch (err) {

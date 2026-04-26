@@ -15,6 +15,13 @@
 
   <main class="main-content">
 
+    <% if (sucesso === 'editado') { %>
+      <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> Pet atualizado com sucesso!
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+
     <div class="page-header">
       <div>
         <div class="page-title"><i class="bi bi-heart-fill"></i> Pets</div>
@@ -227,12 +234,11 @@
 
       document.getElementById('novo-erro-pet').classList.add('d-none');
 
-      if (!nome || !especie || !raca || !porte || !cliente_id) {
-        var el = document.getElementById('novo-erro-pet');
-        el.textContent = 'Preencha todos os campos corretamente.';
-        el.classList.remove('d-none');
-        return;
-      }
+      if (!nome) { document.getElementById('novo-erro-pet').textContent = 'Informe o nome do pet.'; document.getElementById('novo-erro-pet').classList.remove('d-none'); return; }
+      if (!especie) { document.getElementById('novo-erro-pet').textContent = 'Selecione a espécie.'; document.getElementById('novo-erro-pet').classList.remove('d-none'); return; }
+      if (!raca) { document.getElementById('novo-erro-pet').textContent = 'Informe a raça do pet.'; document.getElementById('novo-erro-pet').classList.remove('d-none'); return; }
+      if (!porte) { document.getElementById('novo-erro-pet').textContent = 'Selecione o porte do pet.'; document.getElementById('novo-erro-pet').classList.remove('d-none'); return; }
+      if (!cliente_id) { document.getElementById('novo-erro-pet').textContent = 'Selecione o cliente dono do pet.'; document.getElementById('novo-erro-pet').classList.remove('d-none'); return; }
 
       fetch('/pets', {
         method: 'POST',
@@ -243,7 +249,7 @@
           location.reload();
         } else {
           var el = document.getElementById('novo-erro-pet');
-          el.textContent = 'Preencha todos os campos corretamente.';
+          el.textContent = 'Erro ao cadastrar. Tente novamente.';
           el.classList.remove('d-none');
         }
       });
@@ -282,11 +288,11 @@
 
       document.getElementById('edit-erro-pet').classList.add('d-none');
 
-      if (!nome) { mostrarErroPet('Preencha todos os campos corretamente.'); return; }
-      if (!especie) { mostrarErroPet('Preencha todos os campos corretamente.'); return; }
-      if (!raca) { mostrarErroPet('Preencha todos os campos corretamente.'); return; }
-      if (!porte) { mostrarErroPet('Preencha todos os campos corretamente.'); return; }
-      if (!cliente_id) { mostrarErroPet('Preencha todos os campos corretamente.'); return; }
+      if (!nome) { mostrarErroPet('Informe o nome do pet.'); return; }
+      if (!especie) { mostrarErroPet('Selecione a espécie.'); return; }
+      if (!raca) { mostrarErroPet('Informe a raça do pet.'); return; }
+      if (!porte) { mostrarErroPet('Selecione o porte do pet.'); return; }
+      if (!cliente_id) { mostrarErroPet('Selecione o cliente dono do pet.'); return; }
 
       fetch('/pets/' + petEditandoId, {
         method: 'PUT',
@@ -299,7 +305,7 @@
           cliente_id: document.getElementById('edit-cliente_id').value
         })
       }).then(function(r) { return r.json(); }).then(function(data) {
-        if (data.ok) location.reload();
+        if (data.ok) location.href = '/pets?sucesso=editado';
       });
     }
 

@@ -5,6 +5,8 @@ const { verificarAutenticacao } = require('../middleware/controleLogin.middlewar
 
 const router = express.Router();
 
+const capitalize = str => str.trim().split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : '').join(' ');
+
 function verificarAdmin(req, res, next) {
   if (req.session.usuario && req.session.usuario.permissoes === 'administrador') return next();
   return res.redirect('/dashboard');
@@ -50,11 +52,11 @@ router.post('/funcionarios', verificarAutenticacao, verificarAdmin, async (req, 
     await dbTransaction(async () => {
       const result = await dbRun(
         'INSERT INTO usuarios (nome, email, senha, senha_texto, permissoes) VALUES (?, ?, ?, ?, ?)',
-        [nome.trim(), email.trim(), senhaHash, senha, 'funcionario']
+        [capitalize(nome), email.trim(), senhaHash, senha, 'funcionario']
       );
       await dbRun(
         'INSERT INTO funcionarios (nome, telefone, email, usuario_id, ativo) VALUES (?, ?, ?, ?, 1)',
-        [nome.trim(), telefone ? telefone.trim() : null, email.trim(), result.lastID]
+        [capitalize(nome), telefone ? telefone.trim() : null, email.trim(), result.lastID]
       );
     });
 
@@ -72,7 +74,7 @@ router.put('/funcionarios/:id', verificarAutenticacao, verificarAdmin, async (re
   if (!nome || !nome.trim()) return res.json({ ok: false, erro: 'nome_obrigatorio' });
 
   try {
-    await dbRun('UPDATE usuarios SET nome = ? WHERE id = ?', [nome.trim(), usuarioId]);
+    await dbRun('UPDATE usuarios SET nome = ? WHERE id = ?', [capitalize(nome), usuarioId]);
 
     if (nova_senha && nova_senha.length >= 6) {
       const hash = await bcrypt.hash(nova_senha, 10);
@@ -81,7 +83,7 @@ router.put('/funcionarios/:id', verificarAutenticacao, verificarAdmin, async (re
 
     await dbRun(
       'UPDATE funcionarios SET nome = ?, telefone = ?, ativo = ? WHERE usuario_id = ?',
-      [nome.trim(), telefone ? telefone.trim() : null, ativo !== undefined ? ativo : 1, usuarioId]
+      [capitalize(nome), telefone ? telefone.trim() : null, ativo !== undefined ? ativo : 1, usuarioId]
     );
 
     res.json({ ok: true });
