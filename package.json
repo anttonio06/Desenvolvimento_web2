@@ -4,6 +4,7 @@
   "description": "Sistema web de agendamento para pet shop",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "dev": "nodemon --quiet app.js",
     "init-db": "node database/init.js"
   },

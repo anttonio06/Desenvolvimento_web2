@@ -1,0 +1,68 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─── CI: valida, instala e testa o servidor ───────────────────────────────
+  ci:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Verificar sintaxe (entry point)
+        run: node --check app.js
+
+      - name: Inicializar banco de dados
+        run: npm run init-db
+        env:
+          SESSION_SECRET: ci_placeholder_secret
+
+      - name: Smoke test — servidor responde em /login
+        run: |
+          node app.js &
+          APP_PID=$!
+          sleep 5
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/login)
+          kill $APP_PID 2>/dev/null || true
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "302" ]; then
+            echo "Falha: servidor retornou HTTP $STATUS"
+            exit 1
+          fi
+          echo "OK — servidor retornou HTTP $STATUS"
+        env:
+          SESSION_SECRET: ci_placeholder_secret
+          PORT: 3000
+
+  # ─── CD: deploy automático no Render após CI verde no main ────────────────
+  deploy:
+    name: Deploy (Render)
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Disparar deploy no Render
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
+          echo "Render respondeu HTTP $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "201" ]; then
+            echo "Erro ao disparar deploy"
+            exit 1
+          fi
+          echo "Deploy disparado com sucesso"
