@@ -1,13 +1,9 @@
 const express = require('express');
 const { dbGet, dbAll, dbRun, dbTransaction } = require('../database/db-promise');
 const { verificarAutenticacao } = require('../middleware/controleLogin.middleware');
+const { capitalize, telPattern, emailPattern } = require('../utils/helpers');
 
 const router = express.Router();
-
-const capitalize = str => str.trim().split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : '').join(' ');
-
-const telPattern = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
-const emailPattern = /^[^\s@]+@[^\s@]+\.(com|com\.br|net|org)$/;
 
 router.get('/clientes', verificarAutenticacao, async (req, res) => {
   try {

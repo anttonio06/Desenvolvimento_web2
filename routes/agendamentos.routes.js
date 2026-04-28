@@ -1,6 +1,7 @@
 const express = require('express');
 const { dbGet, dbAll, dbRun, dbTransaction } = require('../database/db-promise');
 const { verificarAutenticacao } = require('../middleware/controleLogin.middleware');
+const { normalizarServicos, calcularValores, validarDependenciasServicos } = require('../utils/helpers');
 
 const router = express.Router();
 
@@ -16,28 +17,6 @@ async function carregarFormData() {
     dbAll('SELECT f.* FROM funcionarios f INNER JOIN usuarios u ON u.id = f.usuario_id WHERE f.ativo = 1 ORDER BY f.nome ASC')
   ]);
   return { pets: pets || [], servicos: servicos || [], funcionarios: funcionarios || [] };
-}
-
-function normalizarServicos(raw) {
-  if (!raw) return [];
-  return Array.isArray(raw) ? raw : [raw];
-}
-
-function calcularValores(servicosSelecionados, pet) {
-  const porteMap = { 'Pequeno': 'preco_pequeno', 'Médio': 'preco_medio', 'Grande': 'preco_grande' };
-  const campoPreco = porteMap[pet.porte] || 'preco_medio';
-
-  let subtotal = 0;
-  servicosSelecionados.forEach(s => {
-    subtotal += parseFloat(s[campoPreco]) || 0;
-  });
-
-  return {
-    subtotal,
-    desconto: 0,
-    valorFinal: Math.round(subtotal * 100) / 100,
-    campoPreco
-  };
 }
 
 router.get('/agendamentos', verificarAutenticacao, async (req, res) => {
@@ -163,8 +142,7 @@ router.post('/agendamentos', verificarAutenticacao, async (req, res) => {
     if (!servicosSel || !servicosSel.length) return renderErro('Serviço inválido.');
 
     const nomes = servicosSel.map(s => s.nome.toLowerCase().trim());
-    const temBanho = nomes.includes('banho');
-    if ((nomes.includes('tosa') || nomes.includes('hidratação')) && !temBanho) {
+    if (!validarDependenciasServicos(nomes)) {
       return renderErro('Tosa e Hidratação só podem ser agendados junto com Banho.');
     }
 
@@ -280,8 +258,7 @@ router.post('/agendamentos/:id/editar', verificarAutenticacao, async (req, res) 
     if (!servicosSel || !servicosSel.length) return renderErro('Serviço inválido.');
 
     const nomes = servicosSel.map(s => s.nome.toLowerCase().trim());
-    const temBanho = nomes.includes('banho');
-    if ((nomes.includes('tosa') || nomes.includes('hidratação')) && !temBanho) {
+    if (!validarDependenciasServicos(nomes)) {
       return renderErro('Tosa e Hidratação só podem ser agendados junto com Banho.');
     }
 
