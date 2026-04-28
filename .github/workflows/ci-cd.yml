@@ -58,11 +58,4 @@ jobs:
 
     steps:
       - name: Disparar deploy no Render
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
-          echo "Render respondeu HTTP $STATUS"
-          if [ "$STATUS" != "200" ] && [ "$STATUS" != "201" ]; then
-            echo "Erro ao disparar deploy"
-            exit 1
-          fi
-          echo "Deploy disparado com sucesso"
+        run: curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
