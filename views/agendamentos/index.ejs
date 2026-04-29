@@ -65,7 +65,7 @@
           <% } else { %>
             <% agendamentos.forEach(function(a) { %>
               <tr data-status="<%= a.status %>">
-                <td><strong><%= new Date(a.data_hora).toLocaleDateString('pt-BR') %></strong><br><small style="color:#4a4a62; font-size:0.72rem"><%= new Date(a.data_hora).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) %></small></td>
+                <td><strong><%= new Date(a.data_hora.replace(' ', 'T')).toLocaleDateString('pt-BR') %></strong><br><small style="color:#4a4a62; font-size:0.72rem"><%= new Date(a.data_hora.replace(' ', 'T')).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) %></small></td>
                 <td><%= a.cliente_nome %></td>
                 <td><%= a.pet_nome %></td>
                 <td><%= a.servicos_nomes || a.servico_nome || '—' %></td>
@@ -138,21 +138,19 @@
   </div>
 
   <% if (typeof sucesso !== 'undefined' && sucesso) { %>
-  <div id="toast-sucesso" style="position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:10px;background:#0f1f17;border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:260px;">
-    <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <i class="bi bi-check-circle-fill" style="color:#10b981;font-size:1rem"></i>
+  <div id="toast-sucesso" style="position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:10px;<%= sucesso === 'excluido' ? 'background:#1a1200;border:1px solid rgba(251,146,60,0.3)' : 'background:#0f1f17;border:1px solid rgba(16,185,129,0.3)' %>;border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:260px;">
+    <div style="width:32px;height:32px;border-radius:8px;<%= sucesso === 'excluido' ? 'background:rgba(251,146,60,0.15)' : 'background:rgba(16,185,129,0.15)' %>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="bi <%= sucesso === 'excluido' ? 'bi-trash-fill' : 'bi-check-circle-fill' %>" style="color:<%= sucesso === 'excluido' ? '#fb923c' : '#10b981' %>;font-size:1rem"></i>
     </div>
     <span style="font-size:0.875rem;font-weight:500;color:#f1f5f9;">
-      <%= sucesso === 'criado' ? 'Agendamento criado com sucesso!' : sucesso === 'concluido' ? 'Serviço finalizado!' : 'Agendamento atualizado com sucesso!' %>
+      <%= sucesso === 'criado' ? 'Agendamento criado com sucesso!' : sucesso === 'concluido' ? 'Serviço finalizado!' : sucesso === 'excluido' ? 'Agendamento excluído com sucesso!' : 'Agendamento atualizado com sucesso!' %>
     </span>
   </div>
   <% } %>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.querySelectorAll('#tabela-agendamentos tbody tr[data-status]').forEach(function(tr) {
-      if (tr.dataset.status !== 'confirmado') tr.style.display = 'none';
-    });
+    aplicarFiltros();
 
     var toast = document.getElementById('toast-sucesso');
     if (toast) {
@@ -166,21 +164,23 @@
     var _urlExcluir = null;
     var _modalConfirmar = null;
 
-    document.getElementById('busca-agendamento').addEventListener('input', function() {
-      var termo = this.value.toLowerCase();
-      document.querySelectorAll('#tabela-agendamentos tbody tr').forEach(function(tr) {
-        tr.style.display = tr.textContent.toLowerCase().includes(termo) ? '' : 'none';
+    function aplicarFiltros() {
+      var termo = document.getElementById('busca-agendamento').value.toLowerCase();
+      var statusAtivo = document.querySelector('.filter-btn.active').dataset.status;
+      document.querySelectorAll('#tabela-agendamentos tbody tr[data-status]').forEach(function(tr) {
+        var matchStatus = statusAtivo === 'todos' || tr.dataset.status === statusAtivo;
+        var matchTermo = !termo || tr.textContent.toLowerCase().includes(termo);
+        tr.style.display = (matchStatus && matchTermo) ? '' : 'none';
       });
-    });
+    }
+
+    document.getElementById('busca-agendamento').addEventListener('input', aplicarFiltros);
 
     document.querySelectorAll('.filter-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
         this.classList.add('active');
-        var status = this.dataset.status;
-        document.querySelectorAll('#tabela-agendamentos tbody tr[data-status]').forEach(function(tr) {
-          tr.style.display = (status === 'todos' || tr.dataset.status === status) ? '' : 'none';
-        });
+        aplicarFiltros();
       });
     });
 
@@ -200,7 +200,7 @@
       if (_urlExcluir) {
         fetch(_urlExcluir, { method: 'DELETE' }).then(function() {
           _modalConfirmar.hide();
-          location.reload();
+          location.href = '/agendamentos?sucesso=excluido';
         });
       }
     });

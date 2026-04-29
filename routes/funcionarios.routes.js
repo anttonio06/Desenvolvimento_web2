@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const { dbGet, dbAll, dbRun, dbTransaction } = require('../database/db-promise');
-const { verificarAutenticacao } = require('../middleware/controleLogin.middleware');
+const { verificarAutenticacao } = require('../middlewares/autenticacao');
 
 const router = express.Router();
 
@@ -24,14 +24,16 @@ router.get('/funcionarios', verificarAutenticacao, verificarAdmin, async (req, r
     res.render('funcionarios/index', {
       usuario: req.session.usuario,
       paginaAtiva: 'funcionarios',
-      usuarios: usuarios || []
+      usuarios: usuarios || [],
+      sucesso: req.query.sucesso || null
     });
   } catch (err) {
     console.error('Erro ao listar funcionários:', err);
     res.render('funcionarios/index', {
       usuario: req.session.usuario,
       paginaAtiva: 'funcionarios',
-      usuarios: []
+      usuarios: [],
+      sucesso: null
     });
   }
 });
@@ -139,3 +141,4 @@ router.delete('/funcionarios/:id', verificarAutenticacao, verificarAdmin, async 
 });
 
 module.exports = router;
+

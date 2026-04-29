@@ -1,10 +1,10 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
-const { dbGet, dbAll } = require('./database/db-promise');
+const { dbGet, dbAll, dbRun } = require('./database/db-promise');
 require('./database/init');
 
 const autenticacaoRoutes = require('./routes/autenticacao.routes');
@@ -13,7 +13,7 @@ const petsRoutes = require('./routes/pets.routes');
 const servicosRoutes = require('./routes/servicos.routes');
 const agendamentosRoutes = require('./routes/agendamentos.routes');
 const funcionariosRoutes = require('./routes/funcionarios.routes');
-const { verificarAutenticacao } = require('./middleware/controleLogin.middleware');
+const { verificarAutenticacao } = require('./middlewares/autenticacao');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -67,7 +67,7 @@ app.delete('/usuarios/:id', verificarAutenticacao, async (req, res) => {
     if (row && row.email === 'admin@petagenda.com') {
       return res.json({ ok: false, erro: 'nao_pode_excluir_admin' });
     }
-    await dbGet('DELETE FROM usuarios WHERE id = ?', [req.params.id]);
+    await dbRun('DELETE FROM usuarios WHERE id = ?', [req.params.id]);
     res.json({ ok: true });
   } catch {
     res.json({ ok: false });
@@ -146,3 +146,4 @@ app.get('/dashboard', verificarAutenticacao, async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
+

@@ -7,7 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  # ─── CI: valida, instala e testa o servidor ───────────────────────────────
   ci:
     name: Build & Test
     runs-on: ubuntu-latest
@@ -33,6 +32,11 @@ jobs:
         env:
           SESSION_SECRET: ci_placeholder_secret
 
+      - name: Executar testes
+        run: npm test
+        env:
+          SESSION_SECRET: ci_placeholder_secret
+
       - name: Smoke test — servidor responde em /login
         run: |
           node app.js &
@@ -49,7 +53,6 @@ jobs:
           SESSION_SECRET: ci_placeholder_secret
           PORT: 3000
 
-  # ─── CD: deploy automático no Render após CI verde no main ────────────────
   deploy:
     name: Deploy (Render)
     runs-on: ubuntu-latest

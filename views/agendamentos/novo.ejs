@@ -362,7 +362,6 @@
         document.getElementById('porte_dot').style.background = cores[porteAtual] || '#374151';
       }
 
-      // Atualiza preços nos cards
       document.querySelectorAll('[id^="preco-"]').forEach(el => {
         const id = el.id.replace('preco-', '');
         const chk = document.getElementById('chk-' + id);
@@ -381,7 +380,6 @@
     }
 
     function toggleCard(id) {
-      // O click no label já faz o toggle do checkbox
       setTimeout(atualizarResumo, 0);
     }
 
@@ -390,7 +388,6 @@
       const campos = { 'Pequeno': 'pequeno', 'Médio': 'medio', 'Grande': 'grande' };
       const campoPreco = campos[porteAtual] || 'medio';
 
-      // Atualiza visual dos cards
       document.querySelectorAll('.servico-card').forEach(card => {
         const chk = card.querySelector('input[type="checkbox"]');
         card.classList.toggle('selecionado', chk.checked);

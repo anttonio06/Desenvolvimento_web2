@@ -52,10 +52,8 @@ db.serialize(async () => {
   db.run(`ALTER TABLE servicos ADD COLUMN preco_medio REAL DEFAULT 0`, () => {});
   db.run(`ALTER TABLE servicos ADD COLUMN preco_grande REAL DEFAULT 0`, () => {});
 
-  // Mantém a coluna por compatibilidade com bancos existentes, mas não é mais usada
   db.run(`ALTER TABLE usuarios ADD COLUMN senha_texto TEXT`, () => {});
 
-  // Colunas para reset de senha
   db.run(`ALTER TABLE usuarios ADD COLUMN reset_token TEXT`, () => {});
   db.run(`ALTER TABLE usuarios ADD COLUMN reset_token_expiry INTEGER`, () => {});
 
@@ -116,6 +114,10 @@ db.serialize(async () => {
       servico_id INTEGER,
       data_hora DATETIME NOT NULL,
       status TEXT DEFAULT 'pendente',
+      observacoes TEXT,
+      valor REAL,
+      desconto REAL DEFAULT 0,
+      funcionario_id INTEGER,
       FOREIGN KEY (cliente_id) REFERENCES clientes(id),
       FOREIGN KEY (pet_id) REFERENCES pets(id),
       FOREIGN KEY (servico_id) REFERENCES servicos(id)

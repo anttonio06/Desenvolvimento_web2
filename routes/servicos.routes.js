@@ -1,6 +1,6 @@
 const express = require('express');
 const { dbAll, dbRun } = require('../database/db-promise');
-const { verificarAutenticacao } = require('../middleware/controleLogin.middleware');
+const { verificarAutenticacao } = require('../middlewares/autenticacao');
 
 const router = express.Router();
 
@@ -37,3 +37,4 @@ router.put('/servicos/:id', verificarAutenticacao, async (req, res) => {
 });
 
 module.exports = router;
+

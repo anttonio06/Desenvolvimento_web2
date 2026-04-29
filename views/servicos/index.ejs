@@ -143,11 +143,17 @@
     </div>
     <% } %>
 
-    <div id="toast-sucesso" style="display:none; position:fixed; bottom:24px; right:24px; background:#10b981; color:#fff; padding:12px 22px; border-radius:10px; font-weight:600; z-index:9999; box-shadow:0 4px 16px rgba(16,185,129,0.3);">
-      <i class="bi bi-check-circle-fill"></i> A alteração foi realizada!
+    <div id="toast-sucesso" style="display:none;position:fixed;bottom:28px;right:28px;z-index:9999;align-items:center;gap:10px;background:#0f1f17;border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:260px;">
+      <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="bi bi-check-circle-fill" style="color:#10b981;font-size:1rem"></i>
+      </div>
+      <span style="font-size:0.875rem;font-weight:500;color:#f1f5f9;">Preço atualizado com sucesso!</span>
     </div>
-    <div id="toast-erro" style="display:none; position:fixed; bottom:24px; right:24px; background:#ef4444; color:#fff; padding:12px 22px; border-radius:10px; font-weight:600; z-index:9999; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
-      <i class="bi bi-x-circle-fill"></i> Erro ao salvar. Tente novamente.
+    <div id="toast-erro" style="display:none;position:fixed;bottom:28px;right:28px;z-index:9999;align-items:center;gap:10px;background:#1f0f0f;border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:260px;">
+      <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="bi bi-x-circle-fill" style="color:#f87171;font-size:1rem"></i>
+      </div>
+      <span style="font-size:0.875rem;font-weight:500;color:#f1f5f9;">Erro ao salvar. Tente novamente.</span>
     </div>
 
   </main>
@@ -209,8 +215,13 @@
 
     function mostrarToast(tipo) {
       const el = document.getElementById('toast-' + tipo);
-      el.style.display = 'block';
-      setTimeout(() => { el.style.display = 'none'; }, 3000);
+      el.style.opacity = '1';
+      el.style.display = 'flex';
+      setTimeout(function() {
+        el.style.transition = 'opacity 0.4s';
+        el.style.opacity = '0';
+        setTimeout(function() { el.style.display = 'none'; el.style.transition = ''; el.style.opacity = '1'; }, 400);
+      }, 3000);
     }
   </script>
 

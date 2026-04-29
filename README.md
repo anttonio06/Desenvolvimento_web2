@@ -59,10 +59,6 @@ Desenvolver um sistema web com:
 - Cadastro com preço por porte (pequeno, médio, grande) e descrição
 - Listagem e edição
 
-### Agenda (Implementação futura)
-- Visualização por dia ou semana
-- Filtros por serviço, pet ou atendente
-
 ### Agendamentos
 - Criação com validação de conflito de horário
 - Seleção de múltiplos serviços por agendamento

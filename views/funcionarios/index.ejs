@@ -247,11 +247,31 @@
     </div>
   </div>
 
+  <% if (sucesso) { %>
+  <div id="toast-sucesso" style="position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:10px;<%= sucesso === 'excluido' ? 'background:#1a1200;border:1px solid rgba(251,146,60,0.3)' : 'background:#0f1f17;border:1px solid rgba(16,185,129,0.3)' %>;border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:260px;">
+    <div style="width:32px;height:32px;border-radius:8px;<%= sucesso === 'excluido' ? 'background:rgba(251,146,60,0.15)' : 'background:rgba(16,185,129,0.15)' %>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="bi <%= sucesso === 'excluido' ? 'bi-trash-fill' : 'bi-check-circle-fill' %>" style="color:<%= sucesso === 'excluido' ? '#fb923c' : '#10b981' %>;font-size:1rem"></i>
+    </div>
+    <span style="font-size:0.875rem;font-weight:500;color:#f1f5f9;">
+      <%= sucesso === 'criado' ? 'Funcionário cadastrado com sucesso!' : sucesso === 'excluido' ? 'Funcionário excluído com sucesso!' : 'Funcionário atualizado com sucesso!' %>
+    </span>
+  </div>
+  <% } %>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     var editandoId = null;
     var _idExcluir = null;
     var _modalConfirmar = null;
+
+    var toast = document.getElementById('toast-sucesso');
+    if (toast) {
+      setTimeout(function() {
+        toast.style.transition = 'opacity 0.4s';
+        toast.style.opacity = '0';
+        setTimeout(function() { toast.remove(); }, 400);
+      }, 3000);
+    }
 
     function mascaraTelefone(valor) {
       var nums = valor.replace(/\D/g, '').slice(0, 11);
@@ -299,7 +319,7 @@
         body: JSON.stringify({ nome, telefone: telefone || null, email, senha })
       }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.ok) {
-          location.reload();
+          location.href = '/funcionarios?sucesso=criado';
         } else {
           erroEl.textContent = 'Preencha todos os campos corretamente.';
           erroEl.classList.remove('d-none');
@@ -337,7 +357,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome, telefone: telefone || null, ativo: parseInt(ativo), nova_senha: novaSenha || null })
       }).then(function(r) { return r.json(); }).then(function(data) {
-        if (data.ok) { location.reload(); }
+        if (data.ok) { location.href = '/funcionarios?sucesso=editado'; }
         else { erroEl.textContent = 'Preencha todos os campos corretamente.'; erroEl.classList.remove('d-none'); }
       });
     }
@@ -391,7 +411,7 @@
       if (!_idExcluir) return;
       fetch('/funcionarios/' + _idExcluir, { method: 'DELETE' }).then(function() {
         _modalConfirmar.hide();
-        location.reload();
+        location.href = '/funcionarios?sucesso=excluido';
       });
     });
   </script>

@@ -1,6 +1,6 @@
 const express = require('express');
 const { dbGet, dbAll, dbRun, dbTransaction } = require('../database/db-promise');
-const { verificarAutenticacao } = require('../middleware/controleLogin.middleware');
+const { verificarAutenticacao } = require('../middlewares/autenticacao');
 const { capitalize, telPattern, emailPattern } = require('../utils/helpers');
 
 const router = express.Router();
@@ -118,3 +118,4 @@ router.delete('/clientes/:id', verificarAutenticacao, async (req, res) => {
 });
 
 module.exports = router;
+

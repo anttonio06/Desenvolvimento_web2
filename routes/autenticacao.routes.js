@@ -185,7 +185,7 @@ router.post('/redefinir-senha/:token', async (req, res) => {
     });
   } catch (err) {
     console.error('Erro ao redefinir senha:', err);
-    renderView('Erro interno. Tente novamente.', null);
+    return renderView('Erro interno. Tente novamente.', null);
   }
 });
 

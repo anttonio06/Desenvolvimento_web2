@@ -102,11 +102,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px; height: 30px;
-  border-radius: 7px;
+  width: 34px; height: 34px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
   text-decoration: none;
   flex-shrink: 0;
