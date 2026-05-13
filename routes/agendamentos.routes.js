@@ -169,6 +169,33 @@ router.post('/agendamentos', verificarAutenticacao, async (req, res) => {
   }
 });
 
+router.get('/agendamentos/calendario-dados', verificarAutenticacao, async (req, res) => {
+  try {
+    const inicio = req.query.inicio;
+    const fim = req.query.fim;
+    if (!inicio || !fim) return res.json({ ok: false, dados: [] });
+    const dados = await dbAll(`
+      SELECT a.id, a.data_hora, a.status, a.valor,
+             c.nome AS cliente_nome, p.nome AS pet_nome,
+             GROUP_CONCAT(s.nome, ', ') AS servicos_nomes,
+             f.nome AS funcionario_nome
+      FROM agendamentos a
+      LEFT JOIN clientes c ON a.cliente_id = c.id
+      LEFT JOIN pets p ON a.pet_id = p.id
+      LEFT JOIN agendamento_servicos ag_s ON ag_s.agendamento_id = a.id
+      LEFT JOIN servicos s ON s.id = ag_s.servico_id
+      LEFT JOIN funcionarios f ON f.id = a.funcionario_id
+      WHERE date(a.data_hora) >= ? AND date(a.data_hora) < ?
+      GROUP BY a.id
+      ORDER BY a.data_hora ASC
+    `, [inicio, fim]);
+    res.json({ ok: true, dados: dados || [] });
+  } catch (err) {
+    console.error('Erro calendario dados:', err);
+    res.json({ ok: false, dados: [] });
+  }
+});
+
 router.get('/agendamentos/:id/editar', verificarAutenticacao, async (req, res) => {
   try {
     const agendamento = await dbGet(`SELECT a.* FROM agendamentos a WHERE a.id = ?`, [req.params.id]);
