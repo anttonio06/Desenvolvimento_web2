@@ -36,6 +36,8 @@
 
     <!-- Filtros de status -->
     <div class="filter-bar" id="filter-bar">
+      <button class="filter-btn" data-status="hoje"><i class="bi bi-calendar-check" style="font-size:0.7rem"></i> Hoje</button>
+      <span style="width:1px;background:rgba(255,255,255,0.07);margin:0 2px;align-self:stretch;border-radius:1px"></span>
       <button class="filter-btn" data-status="todos">Todos</button>
       <button class="filter-btn active" data-status="confirmado">Agendados</button>
       <button class="filter-btn" data-status="concluido">Concluídos</button>
@@ -74,7 +76,7 @@
             </tr>
           <% } else { %>
             <% agendamentos.forEach(function(a) { %>
-              <tr data-status="<%= a.status %>">
+              <tr data-status="<%= a.status %>" data-date="<%= a.data_hora.slice(0,10) %>">
                 <td><strong><%= new Date(a.data_hora.replace(' ', 'T')).toLocaleDateString('pt-BR') %></strong><br><small style="color:#4a4a62; font-size:0.72rem"><%= new Date(a.data_hora.replace(' ', 'T')).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) %></small></td>
                 <td><%= a.cliente_nome %></td>
                 <td><%= a.pet_nome %></td>
@@ -225,11 +227,18 @@
     var _urlExcluir = null;
     var _modalConfirmar = null;
 
+    var _hojeStr = new Date().toISOString().slice(0, 10);
+
     function aplicarFiltros() {
       var termo = document.getElementById('busca-agendamento').value.toLowerCase();
       var statusAtivo = document.querySelector('.filter-btn.active').dataset.status;
       document.querySelectorAll('#tabela-agendamentos tbody tr[data-status]').forEach(function(tr) {
-        var matchStatus = statusAtivo === 'todos' || tr.dataset.status === statusAtivo;
+        var matchStatus;
+        if (statusAtivo === 'hoje') {
+          matchStatus = tr.dataset.date === _hojeStr;
+        } else {
+          matchStatus = statusAtivo === 'todos' || tr.dataset.status === statusAtivo;
+        }
         var matchTermo = !termo || tr.textContent.toLowerCase().includes(termo);
         tr.style.display = (matchStatus && matchTermo) ? '' : 'none';
       });
