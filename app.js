@@ -116,7 +116,8 @@ app.get('/dashboard', verificarAutenticacao, async (req, res) => {
       `)
     ]);
 
-    const hoje = new Date().toISOString().split('T')[0];
+    const _d = new Date();
+    const hoje = _d.getFullYear() + '-' + String(_d.getMonth() + 1).padStart(2, '0') + '-' + String(_d.getDate()).padStart(2, '0');
     const totalHoje = (agendamentos || []).filter(a => a.data_hora && a.data_hora.startsWith(hoje)).length;
 
     res.render('dashboard/dashboard', {
