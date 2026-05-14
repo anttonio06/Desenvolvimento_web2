@@ -264,7 +264,8 @@
     var _urlExcluir = null;
     var _modalConfirmar = null;
 
-    var _hojeStr = new Date().toISOString().slice(0, 10);
+    function _localDateStr(d) { return d.getFullYear()+'-'+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate(); }
+    var _hojeStr = _localDateStr(new Date());
 
     function aplicarFiltros() {
       var termo = document.getElementById('busca-agendamento').value.toLowerCase();
@@ -331,13 +332,13 @@
       var pickerYear = state.year;
       var MESES_CURTO = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
-      var todayStr = new Date().toISOString().slice(0, 10);
-
       function pad2(n) { return String(n).padStart(2, '0'); }
 
       function dateToStr(d) {
         return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
       }
+
+      var todayStr = dateToStr(new Date());
 
       function byDate(list, dateStr) {
         return list.filter(function(a) { return (a.data_hora || '').slice(0, 10) === dateStr; });
@@ -626,10 +627,9 @@
       var HOURS = [8,9,10,11,12,13,14,15,16,17,18];
 
       var wState = { weekStart: null, dados: [], loading: false };
-      var todayStr = new Date().toISOString().slice(0,10);
-
       function pad2(n) { return String(n).padStart(2,'0'); }
       function dateToStr(d) { return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+      var todayStr = dateToStr(new Date());
       function addDays(date, n) { var d=new Date(date.getTime()); d.setDate(d.getDate()+n); return d; }
       function getMonday(date) {
         var d=new Date(date.getTime()), day=d.getDay(), diff=day===0?-6:1-day;
