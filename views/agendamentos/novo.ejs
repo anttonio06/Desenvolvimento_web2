@@ -339,6 +339,12 @@
     const hoje = new Date().toISOString().split('T')[0];
     document.getElementById('data').min = hoje;
 
+    (function() {
+      var p = new URLSearchParams(window.location.search);
+      if (p.get('data')) document.getElementById('data').value = p.get('data');
+      if (p.get('hora')) document.getElementById('hora').value = p.get('hora');
+    })();
+
     let porteAtual = '';
 
     function fmt(val) {

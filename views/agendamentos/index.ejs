@@ -32,6 +32,9 @@
       <button class="view-toggle-btn" id="btn-cal" onclick="toggleView('calendario')">
         <i class="bi bi-calendar3"></i> Calendário
       </button>
+      <button class="view-toggle-btn" id="btn-semana" onclick="toggleView('semana')">
+        <i class="bi bi-calendar-week"></i> Semana
+      </button>
     </div>
 
     <!-- Filtros de status -->
@@ -176,6 +179,40 @@
       <div id="day-panel" style="display:none" class="week-panel"></div>
 
     </div><!-- /cal-section -->
+
+    <!-- ============ SEÇÃO SEMANA ============ -->
+    <div id="week-section" style="display:none">
+
+      <div class="week-cal-card">
+        <div class="week-cal-nav">
+          <div class="cal-nav-group">
+            <button class="cal-nav-btn" onclick="weekPrev()" title="Semana anterior"><i class="bi bi-chevron-left"></i></button>
+            <div class="week-cal-title" id="week-cal-title">—</div>
+            <button class="cal-nav-btn" onclick="weekNext()" title="Próxima semana"><i class="bi bi-chevron-right"></i></button>
+          </div>
+          <div class="cal-nav-group">
+            <button class="cal-today-btn" onclick="weekToday()">Hoje</button>
+            <div class="cal-legend">
+              <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#10b981"></div> Agendado</div>
+              <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#818cf8"></div> Concluído</div>
+              <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#f87171"></div> Cancelado</div>
+              <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fbbf24"></div> Pendente</div>
+            </div>
+          </div>
+        </div>
+        <div class="week-grid-wrapper">
+          <div class="week-grid" id="week-grid">
+            <div style="grid-column:1/-1;padding:44px;text-align:center;color:#3d4f6a;font-size:0.82rem">
+              <i class="bi bi-calendar-week"></i> &nbsp;Clique em "Semana" para carregar
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel de detalhe do agendamento selecionado -->
+      <div id="week-detail-panel" style="display:none" class="week-panel"></div>
+
+    </div><!-- /week-section -->
 
   </main>
 
@@ -549,26 +586,199 @@
       window.toggleView = function(view) {
         var calSection = document.getElementById('cal-section');
         var listSection = document.getElementById('list-section');
+        var weekSection = document.getElementById('week-section');
         var filterBar = document.getElementById('filter-bar');
         var btnLista = document.getElementById('btn-lista');
         var btnCal = document.getElementById('btn-cal');
+        var btnSemana = document.getElementById('btn-semana');
+
+        calSection.style.display = 'none';
+        listSection.style.display = 'none';
+        if (weekSection) weekSection.style.display = 'none';
+        filterBar.style.display = 'none';
+        [btnLista, btnCal, btnSemana].forEach(function(b) { if (b) b.classList.remove('active'); });
 
         if (view === 'calendario') {
           calSection.style.display = 'block';
-          listSection.style.display = 'none';
-          filterBar.style.display = 'none';
-          btnLista.classList.remove('active');
           btnCal.classList.add('active');
           if (state.monthDados.length === 0 && !state.loading) loadMonth();
+        } else if (view === 'semana') {
+          if (weekSection) weekSection.style.display = 'block';
+          if (btnSemana) btnSemana.classList.add('active');
+          if (window.initWeekCal) window.initWeekCal();
         } else {
-          calSection.style.display = 'none';
           listSection.style.display = 'block';
           filterBar.style.display = 'flex';
           btnLista.classList.add('active');
-          btnCal.classList.remove('active');
         }
       };
 
+    })();
+
+    // ============================================================
+    // CALENDÁRIO SEMANAL
+    // ============================================================
+    (function() {
+      var STATUS_LABEL = { confirmado: 'Agendado', concluido: 'Concluído', cancelado: 'Cancelado', pendente: 'Pendente' };
+      var DIAS_CURTO = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+      var MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+      var MESES_CURTO = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      var HOURS = [8,9,10,11,12,13,14,15,16,17,18];
+
+      var wState = { weekStart: null, dados: [], loading: false };
+      var todayStr = new Date().toISOString().slice(0,10);
+
+      function pad2(n) { return String(n).padStart(2,'0'); }
+      function dateToStr(d) { return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+      function addDays(date, n) { var d=new Date(date.getTime()); d.setDate(d.getDate()+n); return d; }
+      function getMonday(date) {
+        var d=new Date(date.getTime()), day=d.getDay(), diff=day===0?-6:1-day;
+        d.setDate(d.getDate()+diff); return d;
+      }
+      function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+
+      async function fetchDados() {
+        var inicio=dateToStr(wState.weekStart), fim=dateToStr(addDays(wState.weekStart,7));
+        try {
+          var r=await fetch('/agendamentos/calendario-dados?inicio='+inicio+'&fim='+fim);
+          var json=await r.json();
+          return json.ok?(json.dados||[]):[];
+        } catch(e) { return []; }
+      }
+
+      async function loadWeek() {
+        wState.loading=true; renderGrid();
+        wState.dados=await fetchDados();
+        wState.loading=false; renderGrid();
+      }
+
+      function renderGrid() {
+        var grid=document.getElementById('week-grid'), title=document.getElementById('week-cal-title');
+        if (!grid) return;
+        var ws=wState.weekStart, we=addDays(ws,4);
+        if (title) {
+          var sM=MESES_CURTO[ws.getMonth()], eM=MESES_CURTO[we.getMonth()];
+          title.textContent = sM===eM
+            ? ws.getDate()+' – '+we.getDate()+' '+eM+' '+we.getFullYear()
+            : ws.getDate()+' '+sM+' – '+we.getDate()+' '+eM+' '+we.getFullYear();
+        }
+        if (wState.loading) {
+          grid.innerHTML='<div style="grid-column:1/-1;padding:44px;text-align:center;color:#3d4f6a;font-size:0.82rem"><i class="bi bi-arrow-clockwise"></i> Carregando...</div>';
+          return;
+        }
+
+        var html='';
+        // Canto vazio + cabeçalhos dos dias
+        html+='<div class="week-col-empty"></div>';
+        for (var i=0;i<5;i++) {
+          var day=addDays(ws,i), dayStr=dateToStr(day), isToday=dayStr===todayStr;
+          html+='<div class="week-col-header'+(isToday?' week-today-col':'')+'">' +
+            '<div class="week-col-dayname">'+DIAS_CURTO[day.getDay()]+'</div>' +
+            '<div class="week-col-daynum'+(isToday?' week-today-num':'')+'">'+day.getDate()+'</div>' +
+            '</div>';
+        }
+        // Linhas de horas
+        HOURS.forEach(function(h) {
+          html+='<div class="week-time-label">'+pad2(h)+':00</div>';
+          for (var i=0;i<5;i++) {
+            var day=addDays(ws,i), dayStr=dateToStr(day), isToday=dayStr===todayStr;
+            var cellAppts=wState.dados.filter(function(a) {
+              return (a.data_hora||'').slice(0,10)===dayStr && parseInt((a.data_hora||'').slice(11,13),10)===h;
+            });
+            html+='<div class="week-cell'+(isToday?' week-today-cell':'')+(cellAppts.length===0?' week-cell-empty':'')+'" data-date="'+dayStr+'" data-hour="'+pad2(h)+':00">';
+            cellAppts.forEach(function(a) {
+              var hora=(a.data_hora||'').slice(11,16), s=a.status||'confirmado';
+              html+='<div class="week-appt-card '+s+'" data-appt-id="'+a.id+'">' +
+                '<div class="week-appt-time">'+hora+'</div>' +
+                '<div class="week-appt-pet">'+escHtml(a.pet_nome||'—')+'</div>' +
+                '<div class="week-appt-serv">'+escHtml(a.servicos_nomes||'—')+'</div>' +
+                '</div>';
+            });
+            html+='</div>';
+          }
+        });
+
+        grid.innerHTML=html;
+        grid.querySelectorAll('.week-appt-card').forEach(function(el) {
+          el.addEventListener('click', function() { weekShowDetail(this.dataset.apptId); });
+        });
+        grid.querySelectorAll('.week-cell-empty').forEach(function(el) {
+          el.addEventListener('click', function() {
+            window.location.href = '/agendamentos/novo?data=' + this.dataset.date + '&hora=' + this.dataset.hour;
+          });
+        });
+      }
+
+      function weekShowDetail(id) {
+        var appt=wState.dados.find(function(a){ return String(a.id)===String(id); });
+        if (!appt) return;
+        var panel=document.getElementById('week-detail-panel');
+        if (!panel) return;
+        panel.style.display='block';
+
+        var hora=(appt.data_hora||'').slice(11,16);
+        var dateStr=(appt.data_hora||'').slice(0,10);
+        var d=new Date(dateStr+'T00:00:00');
+        var dateFmt=d.getDate()+' de '+MESES[d.getMonth()]+' de '+d.getFullYear();
+        var status=appt.status||'confirmado';
+        var label=STATUS_LABEL[status]||status;
+        var valor=appt.valor?'R$ '+Number(appt.valor).toFixed(2).replace('.',','):'';
+        var canComplete=status!=='concluido'&&status!=='cancelado';
+
+        var html=
+          '<div class="day-panel-header">' +
+            '<div>' +
+              '<div class="day-panel-label"><i class="bi bi-calendar-event"></i> '+escHtml(appt.pet_nome||'—')+'</div>' +
+              '<div class="day-panel-date">'+hora+' &middot; '+dateFmt+'</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:8px">' +
+              '<span class="badge-status badge-'+status+'">'+label+'</span>' +
+              '<button class="week-close-btn" onclick="weekCloseDetail()" title="Fechar"><i class="bi bi-x-lg"></i></button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="day-appt-item '+status+'">' +
+            '<div class="day-appt-time">'+hora+'</div>' +
+            '<div class="day-appt-info">' +
+              '<div class="day-appt-pet">'+escHtml(appt.pet_nome||'—')+'</div>' +
+              '<div class="day-appt-serv">'+escHtml(appt.servicos_nomes||'—')+'</div>' +
+              '<div class="day-appt-meta">'+escHtml(appt.cliente_nome||'—')+(appt.funcionario_nome?' &middot; '+escHtml(appt.funcionario_nome):'')+' &middot; '+escHtml(dateFmt)+'</div>' +
+            '</div>' +
+            '<div class="day-appt-right">' +
+              '<span class="badge-status badge-'+status+'">'+label+'</span>' +
+              (valor?'<div class="day-appt-valor">'+valor+'</div>':'') +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05)">' +
+            (canComplete?'<button class="btn-acao" onclick="weekConcluir('+appt.id+')" title="Marcar como concluído" style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.2);width:auto;padding:0 14px;gap:6px"><i class="bi bi-check-lg"></i> Concluir</button>':'') +
+            '<a href="/agendamentos/'+appt.id+'/editar" class="btn-acao editar" style="width:auto;padding:0 14px;gap:6px"><i class="bi bi-pencil-fill"></i> Editar</a>' +
+            '<button class="btn-acao excluir" onclick="excluir(\'/agendamentos/'+appt.id+'\')" title="Excluir" style="width:auto;padding:0 14px;gap:6px"><i class="bi bi-trash-fill"></i> Excluir</button>' +
+          '</div>';
+
+        panel.innerHTML=html;
+        panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+      }
+
+      window.weekCloseDetail=function() {
+        var p=document.getElementById('week-detail-panel');
+        if(p) p.style.display='none';
+      };
+
+      window.weekConcluir=function(id) {
+        fetch('/agendamentos/'+id+'/concluir',{method:'POST'})
+          .then(function(r){return r.json();})
+          .then(function(d){if(d.ok)window.location.href='/agendamentos?sucesso=concluido';});
+      };
+
+      window.weekPrev=function() { wState.weekStart=addDays(wState.weekStart,-7); window.weekCloseDetail(); loadWeek(); };
+      window.weekNext=function() { wState.weekStart=addDays(wState.weekStart,7); window.weekCloseDetail(); loadWeek(); };
+      window.weekToday=function() { wState.weekStart=getMonday(new Date()); window.weekCloseDetail(); loadWeek(); };
+
+      window.initWeekCal=function() {
+        if(!wState.weekStart) wState.weekStart=getMonday(new Date());
+        if(wState.dados.length===0&&!wState.loading) loadWeek(); else renderGrid();
+      };
     })();
   </script>
 
