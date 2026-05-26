@@ -37,21 +37,21 @@ router.get('/clientes', verificarAutenticacao, async (req, res) => {
 
 router.post('/clientes', verificarAutenticacao, async (req, res) => {
   const { nome, telefone, email } = req.body;
-  const telValido = telefone && telefone.trim() ? telefone.trim() : null;
-  const emailValido = email && email.trim() ? email.trim() : null;
+  const telefoneSanitizado = telefone && telefone.trim() ? telefone.trim() : null;
+  const emailSanitizado = email && email.trim() ? email.trim() : null;
 
-  if (!nome || !nome.trim() || !telValido || !telPattern.test(telValido) || !emailValido || !emailPattern.test(emailValido)) {
+  if (!nome || !nome.trim() || !telefoneSanitizado || !telPattern.test(telefoneSanitizado) || !emailSanitizado || !emailPattern.test(emailSanitizado)) {
     return res.json({ ok: false, erro: 'dados_invalidos' });
   }
 
   try {
-    const dupTel = await dbGet('SELECT id FROM clientes WHERE telefone = ?', [telValido]);
+    const dupTel = await dbGet('SELECT id FROM clientes WHERE telefone = ?', [telefoneSanitizado]);
     if (dupTel) return res.json({ ok: false, erro: 'telefone_duplicado' });
 
-    const dupEmail = await dbGet('SELECT id FROM clientes WHERE email = ?', [emailValido]);
+    const dupEmail = await dbGet('SELECT id FROM clientes WHERE email = ?', [emailSanitizado]);
     if (dupEmail) return res.json({ ok: false, erro: 'email_duplicado' });
 
-    await dbRun('INSERT INTO clientes (nome, telefone, email) VALUES (?, ?, ?)', [capitalize(nome), telValido, emailValido]);
+    await dbRun('INSERT INTO clientes (nome, telefone, email) VALUES (?, ?, ?)', [capitalize(nome), telefoneSanitizado, emailSanitizado]);
     res.json({ ok: true });
   } catch (err) {
     console.error('Erro ao criar cliente:', err);
@@ -61,21 +61,21 @@ router.post('/clientes', verificarAutenticacao, async (req, res) => {
 
 router.put('/clientes/:id', verificarAutenticacao, async (req, res) => {
   const { nome, telefone, email } = req.body;
-  const telValido = telefone && telefone.trim() ? telefone.trim() : null;
-  const emailValido = email && email.trim() ? email.trim() : null;
+  const telefoneSanitizado = telefone && telefone.trim() ? telefone.trim() : null;
+  const emailSanitizado = email && email.trim() ? email.trim() : null;
 
-  if (!nome || !nome.trim() || !telValido || !telPattern.test(telValido) || !emailValido || !emailPattern.test(emailValido)) {
+  if (!nome || !nome.trim() || !telefoneSanitizado || !telPattern.test(telefoneSanitizado) || !emailSanitizado || !emailPattern.test(emailSanitizado)) {
     return res.json({ ok: false, erro: 'dados_invalidos' });
   }
 
   try {
-    const dupTel = await dbGet('SELECT id FROM clientes WHERE telefone = ? AND id != ?', [telValido, req.params.id]);
+    const dupTel = await dbGet('SELECT id FROM clientes WHERE telefone = ? AND id != ?', [telefoneSanitizado, req.params.id]);
     if (dupTel) return res.json({ ok: false, erro: 'telefone_duplicado' });
 
-    const dupEmail = await dbGet('SELECT id FROM clientes WHERE email = ? AND id != ?', [emailValido, req.params.id]);
+    const dupEmail = await dbGet('SELECT id FROM clientes WHERE email = ? AND id != ?', [emailSanitizado, req.params.id]);
     if (dupEmail) return res.json({ ok: false, erro: 'email_duplicado' });
 
-    await dbRun('UPDATE clientes SET nome = ?, telefone = ?, email = ? WHERE id = ?', [capitalize(nome), telValido, emailValido, req.params.id]);
+    await dbRun('UPDATE clientes SET nome = ?, telefone = ?, email = ? WHERE id = ?', [capitalize(nome), telefoneSanitizado, emailSanitizado, req.params.id]);
     res.json({ ok: true });
   } catch (err) {
     console.error('Erro ao editar cliente:', err);

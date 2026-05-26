@@ -50,6 +50,16 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    const funcRow = await dbGet('SELECT ativo FROM funcionarios WHERE usuario_id = ?', [usuario.id]);
+    if (funcRow && funcRow.ativo === 0) {
+      return res.render('autenticacao/login', {
+        title: 'Login - PetAgenda',
+        erro: 'Usuário Inativo.',
+        sucesso: null,
+        cadastrado: false
+      });
+    }
+
     req.session.usuario = {
       id: usuario.id,
       nome: usuario.nome,

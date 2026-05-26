@@ -1,16 +1,10 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const { dbGet, dbAll, dbRun, dbTransaction } = require('../database/db-promise');
-const { verificarAutenticacao } = require('../middlewares/autenticacao');
+const { verificarAutenticacao, verificarAdmin } = require('../middlewares/autenticacao');
+const { capitalize } = require('../utils/helpers');
 
 const router = express.Router();
-
-const capitalize = str => str.trim().split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : '').join(' ');
-
-function verificarAdmin(req, res, next) {
-  if (req.session.usuario && req.session.usuario.permissoes === 'administrador') return next();
-  return res.redirect('/dashboard');
-}
 
 router.get('/funcionarios', verificarAutenticacao, verificarAdmin, async (req, res) => {
   try {

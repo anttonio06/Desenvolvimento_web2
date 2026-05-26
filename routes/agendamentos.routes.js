@@ -6,6 +6,7 @@ const { normalizarServicos, calcularValores, validarDependenciasServicos } = req
 const router = express.Router();
 
 const LIMITE = 20;
+const CAPACIDADE_MAX_POR_HORA = 3;
 
 async function carregarFormData() {
   const [pets, servicos, funcionarios] = await Promise.all([
@@ -112,7 +113,7 @@ router.post('/agendamentos', verificarAutenticacao, async (req, res) => {
       `SELECT COUNT(*) AS count FROM agendamentos WHERE strftime('%Y-%m-%d %H', data_hora) = ? AND status != 'cancelado'`,
       [slotHora]
     );
-    if (slotRow && slotRow.count >= 3) {
+    if (slotRow && slotRow.count >= CAPACIDADE_MAX_POR_HORA) {
       return renderErro('Horário lotado! Já existem 3 agendamentos nesse horário. Escolha outro.');
     }
 
@@ -254,7 +255,7 @@ router.post('/agendamentos/:id/editar', verificarAutenticacao, async (req, res) 
       `SELECT COUNT(*) AS count FROM agendamentos WHERE strftime('%Y-%m-%d %H', data_hora) = ? AND status != 'cancelado' AND id != ?`,
       [slotHora, id]
     );
-    if (slotRow && slotRow.count >= 3) {
+    if (slotRow && slotRow.count >= CAPACIDADE_MAX_POR_HORA) {
       return renderErro('Horário lotado! Já existem 3 agendamentos nesse horário.');
     }
 

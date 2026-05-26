@@ -1,10 +1,9 @@
 const express = require('express');
 const { dbGet, dbAll, dbRun, dbTransaction } = require('../database/db-promise');
 const { verificarAutenticacao } = require('../middlewares/autenticacao');
+const { capitalize } = require('../utils/helpers');
 
 const router = express.Router();
-
-const capitalize = str => str.trim().split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : '').join(' ');
 
 router.get('/pets', verificarAutenticacao, async (req, res) => {
   try {

@@ -78,9 +78,9 @@ app.get('/dashboard', verificarAutenticacao, async (req, res) => {
   res.set('Cache-Control', 'no-store');
   try {
     const [
-      r1,
-      r2,
-      r3,
+      totalClientesRow,
+      totalPetsRow,
+      totalServicosRow,
       ultimosClientes,
       agendamentos,
       ultimosPets,
@@ -116,16 +116,16 @@ app.get('/dashboard', verificarAutenticacao, async (req, res) => {
       `)
     ]);
 
-    const _d = new Date();
-    const hoje = _d.getFullYear() + '-' + String(_d.getMonth() + 1).padStart(2, '0') + '-' + String(_d.getDate()).padStart(2, '0');
+    const dataAtual = new Date();
+    const hoje = dataAtual.getFullYear() + '-' + String(dataAtual.getMonth() + 1).padStart(2, '0') + '-' + String(dataAtual.getDate()).padStart(2, '0');
     const totalHoje = (agendamentos || []).filter(a => a.data_hora && a.data_hora.startsWith(hoje)).length;
 
     res.render('dashboard/dashboard', {
       usuario: req.session.usuario,
       paginaAtiva: 'dashboard',
-      totalClientes: r1 ? r1.total : 0,
-      totalPets: r2 ? r2.total : 0,
-      totalServicos: r3 ? r3.total : 0,
+      totalClientes: totalClientesRow ? totalClientesRow.total : 0,
+      totalPets: totalPetsRow ? totalPetsRow.total : 0,
+      totalServicos: totalServicosRow ? totalServicosRow.total : 0,
       ultimosClientes: ultimosClientes || [],
       agendamentos: agendamentos || [],
       ultimosPets: ultimosPets || [],
