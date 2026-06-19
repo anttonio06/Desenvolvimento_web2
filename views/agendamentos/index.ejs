@@ -37,7 +37,6 @@
       </button>
     </div>
 
-    <!-- Filtros de status -->
     <div class="filter-bar" id="filter-bar">
       <button class="filter-btn" data-status="hoje"><i class="bi bi-calendar-check" style="font-size:0.7rem"></i> Hoje</button>
       <span style="width:1px;background:rgba(255,255,255,0.07);margin:0 2px;align-self:stretch;border-radius:1px"></span>
@@ -80,7 +79,10 @@
           <% } else { %>
             <% agendamentos.forEach(function(a) { %>
               <tr data-status="<%= a.status %>" data-date="<%= a.data_hora.slice(0,10) %>">
-                <td><strong><%= new Date(a.data_hora.replace(' ', 'T')).toLocaleDateString('pt-BR') %></strong><br><small style="color:#4a4a62; font-size:0.72rem"><%= new Date(a.data_hora.replace(' ', 'T')).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) %></small></td>
+                <td>
+                  <strong><%= new Date(a.data_hora.replace(' ', 'T')).toLocaleDateString('pt-BR') %></strong><br>
+                  <small class="table-time"><%= new Date(a.data_hora.replace(' ', 'T')).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) %></small>
+                </td>
                 <td><%= a.cliente_nome %></td>
                 <td><%= a.pet_nome %></td>
                 <td><%= a.servicos_nomes || a.servico_nome || '—' %></td>
@@ -94,8 +96,8 @@
                   <% } %>
                 </td>
                 <td class="acoes">
-                  <button class="btn-acao" title="Marcar como concluído" onclick="concluir(<%= a.id %>)"
-                    style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.2);<%- (a.status === 'concluido' || a.status === 'cancelado') ? 'visibility:hidden;pointer-events:none' : '' %>">
+                  <button class="btn-acao btn-concluir" title="Marcar como concluído" onclick="concluir(<%= a.id %>)"
+                    <%- (a.status === 'concluido' || a.status === 'cancelado') ? 'style="visibility:hidden"' : '' %>>
                     <i class="bi bi-check-lg"></i>
                   </button>
                   <a href="/agendamentos/<%= a.id %>/editar" class="btn-acao editar" title="Editar"><i class="bi bi-pencil-fill"></i></a>
@@ -108,19 +110,17 @@
       </table>
 
       <% if (totalPaginas > 1) { %>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:0.78rem;color:#4b5563;">
-            Mostrando página <%= pagina %> de <%= totalPaginas %> &nbsp;·&nbsp; <%= total %> agendamentos no total
-          </span>
-          <div style="display:flex;gap:6px;">
+        <div class="pagination-bar">
+          <span class="pagination-info">Página <%= pagina %> de <%= totalPaginas %> · <%= total %> agendamentos</span>
+          <div class="pagination-btns">
             <% if (pagina > 1) { %>
-              <a href="/agendamentos?pagina=<%= pagina - 1 %>" style="display:inline-flex;align-items:center;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:#94a3b8;font-size:0.8rem;text-decoration:none;">
-                <i class="bi bi-chevron-left"></i>&nbsp; Anterior
+              <a href="/agendamentos?pagina=<%= pagina - 1 %>" class="pagination-btn">
+                <i class="bi bi-chevron-left"></i> Anterior
               </a>
             <% } %>
             <% if (pagina < totalPaginas) { %>
-              <a href="/agendamentos?pagina=<%= pagina + 1 %>" style="display:inline-flex;align-items:center;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:#94a3b8;font-size:0.8rem;text-decoration:none;">
-                Próxima &nbsp;<i class="bi bi-chevron-right"></i>
+              <a href="/agendamentos?pagina=<%= pagina + 1 %>" class="pagination-btn">
+                Próxima <i class="bi bi-chevron-right"></i>
               </a>
             <% } %>
           </div>
@@ -128,27 +128,26 @@
       <% } %>
 
     </div>
-    </div><!-- /list-section -->
+    </div>
 
-    <!-- ============ SEÇÃO CALENDÁRIO ============ -->
+    <!-- CALENDÁRIO MENSAL -->
     <div id="cal-section" style="display:none">
 
-      <!-- Calendário Mensal -->
       <div class="cal-card">
         <div class="cal-nav">
           <div class="cal-nav-group">
-            <button class="cal-nav-btn" onclick="calPrevMonth()" title="Mês anterior"><i class="bi bi-chevron-left"></i></button>
+            <button class="cal-nav-btn" onclick="cal.go(0,-1)" title="Mês anterior"><i class="bi bi-chevron-left"></i></button>
             <div class="cal-title-wrapper">
-              <button class="cal-nav-title" id="cal-nav-title" onclick="calTogglePicker(event)">
-                Carregando...
-                <i class="bi bi-chevron-down" id="cal-picker-chevron" style="font-size:0.6rem;transition:transform 0.18s"></i>
+              <button class="cal-nav-title" id="cal-nav-title" onclick="cal.togglePicker(event)">
+                <span id="cal-title-text">Carregando...</span>
+                <i class="bi bi-chevron-down cal-picker-chevron" id="cal-picker-chevron"></i>
               </button>
               <div class="cal-picker" id="cal-picker" style="display:none"></div>
             </div>
-            <button class="cal-nav-btn" onclick="calNextMonth()" title="Próximo mês"><i class="bi bi-chevron-right"></i></button>
+            <button class="cal-nav-btn" onclick="cal.go(0,1)" title="Próximo mês"><i class="bi bi-chevron-right"></i></button>
           </div>
           <div class="cal-nav-group">
-            <button class="cal-today-btn" onclick="calToday()">Hoje</button>
+            <button class="cal-today-btn" onclick="cal.goToday()">Hoje</button>
             <div class="cal-legend">
               <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#10b981"></div> Agendado</div>
               <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#818cf8"></div> Concluído</div>
@@ -169,29 +168,28 @@
         </div>
 
         <div class="cal-grid" id="cal-grid">
-          <div class="cal-loading" style="grid-column:1/-1;padding:40px;text-align:center;color:#3d4f6a;font-size:0.82rem">
-            <i class="bi bi-calendar3"></i> &nbsp;Clique em "Calendário" para carregar
+          <div class="cal-loading">
+            <i class="bi bi-calendar3"></i> Clique em "Calendário" para carregar
           </div>
         </div>
       </div>
 
-      <!-- Painel do Dia (oculto até clicar em um dia) -->
       <div id="day-panel" style="display:none" class="week-panel"></div>
 
-    </div><!-- /cal-section -->
+    </div>
 
-    <!-- ============ SEÇÃO SEMANA ============ -->
+    <!-- CALENDÁRIO SEMANAL -->
     <div id="week-section" style="display:none">
 
       <div class="week-cal-card">
         <div class="week-cal-nav">
           <div class="cal-nav-group">
-            <button class="cal-nav-btn" onclick="weekPrev()" title="Semana anterior"><i class="bi bi-chevron-left"></i></button>
+            <button class="cal-nav-btn" onclick="week.prev()" title="Semana anterior"><i class="bi bi-chevron-left"></i></button>
             <div class="week-cal-title" id="week-cal-title">—</div>
-            <button class="cal-nav-btn" onclick="weekNext()" title="Próxima semana"><i class="bi bi-chevron-right"></i></button>
+            <button class="cal-nav-btn" onclick="week.next()" title="Próxima semana"><i class="bi bi-chevron-right"></i></button>
           </div>
           <div class="cal-nav-group">
-            <button class="cal-today-btn" onclick="weekToday()">Hoje</button>
+            <button class="cal-today-btn" onclick="week.today()">Hoje</button>
             <div class="cal-legend">
               <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#10b981"></div> Agendado</div>
               <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#818cf8"></div> Concluído</div>
@@ -202,32 +200,30 @@
         </div>
         <div class="week-grid-wrapper">
           <div class="week-grid" id="week-grid">
-            <div style="grid-column:1/-1;padding:44px;text-align:center;color:#3d4f6a;font-size:0.82rem">
-              <i class="bi bi-calendar-week"></i> &nbsp;Clique em "Semana" para carregar
+            <div class="cal-loading" style="grid-column:1/-1">
+              <i class="bi bi-calendar-week"></i> Clique em "Semana" para carregar
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Painel de detalhe do agendamento selecionado -->
       <div id="week-detail-panel" style="display:none" class="week-panel"></div>
 
-    </div><!-- /week-section -->
+    </div>
 
   </main>
 
-  <!-- Modal Confirmação Exclusão -->
   <div class="modal fade" id="modalConfirmar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
-      <div class="modal-content" style="border-radius:14px; border:1px solid rgba(239,68,68,0.2); background:#0f1624">
+      <div class="modal-content">
         <div class="modal-body p-4">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px">
-            <div style="width:40px; height:40px; border-radius:10px; background:rgba(239,68,68,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0">
-              <i class="bi bi-exclamation-triangle-fill" style="color:#f87171; font-size:1.1rem"></i>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="bi bi-exclamation-triangle-fill" style="color:#f87171;font-size:1.1rem"></i>
             </div>
-            <h5 style="margin:0; font-size:1rem; font-weight:700; color:#f1f5f9">Confirmar exclusão</h5>
+            <h5 style="margin:0;font-size:1rem;font-weight:700;color:#f1f5f9">Confirmar exclusão</h5>
           </div>
-          <p style="margin:0; font-size:0.875rem; color:#94a3b8; line-height:1.6">Deseja realmente excluir este agendamento? Esta ação não pode ser desfeita.</p>
+          <p style="margin:0;font-size:0.875rem;color:#94a3b8;line-height:1.6">Deseja realmente excluir este agendamento? Esta ação não pode ser desfeita.</p>
         </div>
         <div class="modal-footer border-0 pt-0 px-4 pb-4" style="gap:10px">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="flex:1">Cancelar</button>
@@ -238,548 +234,461 @@
   </div>
 
   <% if (typeof sucesso !== 'undefined' && sucesso) { %>
-  <div id="toast-sucesso" style="position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:10px;<%= sucesso === 'excluido' ? 'background:#1a1200;border:1px solid rgba(251,146,60,0.3)' : 'background:#0f1f17;border:1px solid rgba(16,185,129,0.3)' %>;border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:260px;">
-    <div style="width:32px;height:32px;border-radius:8px;<%= sucesso === 'excluido' ? 'background:rgba(251,146,60,0.15)' : 'background:rgba(16,185,129,0.15)' %>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <i class="bi <%= sucesso === 'excluido' ? 'bi-trash-fill' : 'bi-check-circle-fill' %>" style="color:<%= sucesso === 'excluido' ? '#fb923c' : '#10b981' %>;font-size:1rem"></i>
+  <div id="toast-sucesso" class="toast-sucesso <%= sucesso === 'excluido' ? 'excluido' : '' %>">
+    <div class="toast-icon">
+      <i class="bi <%= sucesso === 'excluido' ? 'bi-trash-fill' : 'bi-check-circle-fill' %>"></i>
     </div>
-    <span style="font-size:0.875rem;font-weight:500;color:#f1f5f9;">
-      <%= sucesso === 'criado' ? 'Agendamento criado com sucesso!' : sucesso === 'concluido' ? 'Serviço finalizado!' : sucesso === 'excluido' ? 'Agendamento excluído com sucesso!' : 'Agendamento atualizado com sucesso!' %>
+    <span class="toast-text">
+      <% if (sucesso === 'criado') { %>Agendamento criado com sucesso!
+      <% } else if (sucesso === 'concluido') { %>Serviço finalizado!
+      <% } else if (sucesso === 'excluido') { %>Agendamento excluído com sucesso!
+      <% } else { %>Agendamento atualizado com sucesso!<% } %>
     </span>
   </div>
   <% } %>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const MESES_CURTO = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const DIAS_FULL = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+    const DIAS_CURTO = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const STATUS_LABEL = { confirmado: 'Agendado', concluido: 'Concluído', cancelado: 'Cancelado', pendente: 'Pendente' };
+    const HOURS = [8,9,10,11,12,13,14,15,16,17,18];
+
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function dateStr(d) { return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    const TODAY = dateStr(new Date());
+
+    let _urlExcluir = null, _modal = null;
+
     aplicarFiltros();
 
-    var toast = document.getElementById('toast-sucesso');
-    if (toast) {
-      setTimeout(function() {
-        toast.style.transition = 'opacity 0.4s';
-        toast.style.opacity = '0';
-        setTimeout(function() { toast.remove(); }, 400);
-      }, 3000);
-    }
-
-    var _urlExcluir = null;
-    var _modalConfirmar = null;
-
-    function _localDateStr(d) { return d.getFullYear()+'-'+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate(); }
-    var _hojeStr = _localDateStr(new Date());
-
-    function aplicarFiltros() {
-      var termo = document.getElementById('busca-agendamento').value.toLowerCase();
-      var statusAtivo = document.querySelector('.filter-btn.active').dataset.status;
-      document.querySelectorAll('#tabela-agendamentos tbody tr[data-status]').forEach(function(tr) {
-        var matchStatus;
-        if (statusAtivo === 'hoje') {
-          matchStatus = tr.dataset.date === _hojeStr;
-        } else {
-          matchStatus = statusAtivo === 'todos' || tr.dataset.status === statusAtivo;
-        }
-        var matchTermo = !termo || tr.textContent.toLowerCase().includes(termo);
-        tr.style.display = (matchStatus && matchTermo) ? '' : 'none';
-      });
-    }
-
     document.getElementById('busca-agendamento').addEventListener('input', aplicarFiltros);
-
-    document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', function() {
-        document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         aplicarFiltros();
       });
     });
 
+    function aplicarFiltros() {
+      const termo = document.getElementById('busca-agendamento').value.toLowerCase();
+      const status = document.querySelector('.filter-btn.active').dataset.status;
+      document.querySelectorAll('#tabela-agendamentos tbody tr[data-status]').forEach(tr => {
+        const matchStatus = status === 'hoje' ? tr.dataset.date === TODAY
+                          : status === 'todos' || tr.dataset.status === status;
+        const matchTermo = !termo || tr.textContent.toLowerCase().includes(termo);
+        tr.style.display = matchStatus && matchTermo ? '' : 'none';
+      });
+    }
+
     function concluir(id) {
-      fetch('/agendamentos/' + id + '/concluir', { method: 'POST' })
-        .then(function(r) { return r.json(); })
-        .then(function(data) { if (data.ok) window.location.href = '/agendamentos?sucesso=concluido'; });
+      fetch(`/agendamentos/${id}/concluir`, { method: 'POST' })
+        .then(r => r.json())
+        .then(d => { if (d.ok) location.href = '/agendamentos?sucesso=concluido'; });
     }
 
     function excluir(url) {
       _urlExcluir = url;
-      _modalConfirmar = new bootstrap.Modal(document.getElementById('modalConfirmar'));
-      _modalConfirmar.show();
+      _modal = new bootstrap.Modal(document.getElementById('modalConfirmar'));
+      _modal.show();
     }
 
-    document.getElementById('btnConfirmarExcluir').addEventListener('click', function() {
-      if (_urlExcluir) {
-        fetch(_urlExcluir, { method: 'DELETE' }).then(function() {
-          _modalConfirmar.hide();
-          location.href = '/agendamentos?sucesso=excluido';
-        });
-      }
+    document.getElementById('btnConfirmarExcluir').addEventListener('click', () => {
+      if (!_urlExcluir) return;
+      fetch(_urlExcluir, { method: 'DELETE' }).then(() => {
+        _modal.hide();
+        location.href = '/agendamentos?sucesso=excluido';
+      });
     });
 
-    // ============================================================
-    // CALENDÁRIO INTERATIVO
-    // ============================================================
-    (function() {
-      var MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-      var DIAS_FULL = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
-      var STATUS_LABEL = { confirmado: 'Agendado', concluido: 'Concluído', cancelado: 'Cancelado', pendente: 'Pendente' };
+    const toast = document.getElementById('toast-sucesso');
+    if (toast) setTimeout(() => {
+      toast.style.transition = 'opacity 0.4s';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 400);
+    }, 3000);
 
-      var state = {
-        year: new Date().getFullYear(),
-        month: new Date().getMonth(),
-        selectedDate: null,
-        monthDados: [],
-        loading: false
-      };
+    function toggleView(view) {
+      document.getElementById('cal-section').style.display = 'none';
+      document.getElementById('list-section').style.display = 'none';
+      document.getElementById('week-section').style.display = 'none';
+      document.getElementById('filter-bar').style.display = 'none';
+      document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
 
-      var pickerYear = state.year;
-      var MESES_CURTO = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-      function pad2(n) { return String(n).padStart(2, '0'); }
-
-      function dateToStr(d) {
-        return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+      if (view === 'calendario') {
+        document.getElementById('cal-section').style.display = 'block';
+        document.getElementById('btn-cal').classList.add('active');
+        if (!cal.loaded && !cal.loading) cal.loadMonth();
+      } else if (view === 'semana') {
+        document.getElementById('week-section').style.display = 'block';
+        document.getElementById('btn-semana').classList.add('active');
+        week.init();
+      } else {
+        document.getElementById('list-section').style.display = 'block';
+        document.getElementById('filter-bar').style.display = 'flex';
+        document.getElementById('btn-lista').classList.add('active');
       }
+    }
 
-      var todayStr = dateToStr(new Date());
+    const cal = {
+      year: new Date().getFullYear(),
+      month: new Date().getMonth(),
+      selected: null,
+      dados: [],
+      loading: false,
+      loaded: false,
+      pickerYear: new Date().getFullYear(),
 
-      function byDate(list, dateStr) {
-        return list.filter(function(a) { return (a.data_hora || '').slice(0, 10) === dateStr; });
-      }
-
-      async function fetchDados(inicio, fim) {
+      async loadMonth() {
+        this.loading = true;
+        this.renderGrid();
+        const inicio = `${this.year}-${pad2(this.month+1)}-01`;
+        const fim = dateStr(new Date(this.year, this.month+1, 1));
         try {
-          var r = await fetch('/agendamentos/calendario-dados?inicio=' + inicio + '&fim=' + fim);
-          var json = await r.json();
-          return json.ok ? (json.dados || []) : [];
-        } catch(e) { return []; }
-      }
+          const r = await fetch(`/agendamentos/calendario-dados?inicio=${inicio}&fim=${fim}`);
+          const json = await r.json();
+          this.dados = json.ok ? (json.dados || []) : [];
+        } catch(e) { this.dados = []; }
+        this.loading = false;
+        this.loaded = true;
+        this.renderGrid();
+      },
 
-      async function loadMonth() {
-        state.loading = true;
-        renderGrid();
-        var inicio = state.year + '-' + pad2(state.month + 1) + '-01';
-        var fimDate = new Date(state.year, state.month + 1, 1);
-        state.monthDados = await fetchDados(inicio, dateToStr(fimDate));
-        state.loading = false;
-        renderGrid();
-      }
+      byDate(d) { return this.dados.filter(a => (a.data_hora||'').slice(0,10) === d); },
 
-      function renderGrid() {
-        var grid = document.getElementById('cal-grid');
-        var title = document.getElementById('cal-nav-title');
-        if (!grid || !title) return;
-        title.textContent = MESES[state.month] + ' ' + state.year;
+      renderGrid() {
+        const grid = document.getElementById('cal-grid');
+        if (!grid) return;
 
-        if (state.loading) {
-          grid.innerHTML = '<div style="grid-column:1/-1;padding:44px;text-align:center;color:#3d4f6a;font-size:0.82rem"><i class="bi bi-arrow-clockwise"></i> Carregando...</div>';
+        document.getElementById('cal-title-text').textContent = `${MESES[this.month]} ${this.year}`;
+
+        if (this.loading) {
+          grid.innerHTML = '<div class="cal-loading"><i class="bi bi-arrow-clockwise"></i> Carregando...</div>';
           return;
         }
 
-        var firstWeekDay = new Date(state.year, state.month, 1).getDay();
-        var daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
-        var daysInPrevMonth = new Date(state.year, state.month, 0).getDate();
-        var html = '';
+        const firstDay = new Date(this.year, this.month, 1).getDay();
+        const daysInMonth = new Date(this.year, this.month+1, 0).getDate();
+        const prevDays = new Date(this.year, this.month, 0).getDate();
+        let html = '';
 
-        for (var i = firstWeekDay - 1; i >= 0; i--) {
-          var day = daysInPrevMonth - i;
-          html += buildDayCell(day, dateToStr(new Date(state.year, state.month - 1, day)), true);
-        }
-        for (var d = 1; d <= daysInMonth; d++) {
-          html += buildDayCell(d, dateToStr(new Date(state.year, state.month, d)), false);
-        }
-        var total = firstWeekDay + daysInMonth;
-        var trailing = total % 7 === 0 ? 0 : 7 - (total % 7);
-        for (var d = 1; d <= trailing; d++) {
-          html += buildDayCell(d, dateToStr(new Date(state.year, state.month + 1, d)), true);
-        }
+        for (let i = firstDay-1; i >= 0; i--)
+          html += this.dayCell(prevDays-i, dateStr(new Date(this.year, this.month-1, prevDays-i)), true);
+        for (let d = 1; d <= daysInMonth; d++)
+          html += this.dayCell(d, dateStr(new Date(this.year, this.month, d)), false);
+        const trailing = (firstDay + daysInMonth) % 7;
+        for (let d = 1; d <= (trailing ? 7-trailing : 0); d++)
+          html += this.dayCell(d, dateStr(new Date(this.year, this.month+1, d)), true);
 
         grid.innerHTML = html;
-        grid.querySelectorAll('.cal-day:not(.other-month)').forEach(function(el) {
-          el.addEventListener('click', function() { selectDay(this.dataset.date); });
+        grid.querySelectorAll('.cal-day:not(.other-month)').forEach(el => {
+          el.addEventListener('click', () => this.selectDay(el.dataset.date));
         });
-      }
+      },
 
-      function buildDayCell(day, dateStr, other) {
-        var appts = byDate(state.monthDados, dateStr);
-        var cls = 'cal-day';
-        if (other) cls += ' other-month';
-        if (dateStr === todayStr) cls += ' today';
-        if (dateStr === state.selectedDate) cls += ' selected';
-        if (!other && appts.length > 0) cls += ' has-appts';
+      dayCell(day, ds, other) {
+        const appts = other ? [] : this.byDate(ds);
+        const cls = ['cal-day',
+          other && 'other-month',
+          ds === TODAY && 'today',
+          ds === this.selected && 'selected',
+          !other && appts.length && 'has-appts',
+        ].filter(Boolean).join(' ');
 
-        var inner = '';
-        if (!other && appts.length > 0) {
-          var seen = {};
-          var dots = '';
-          appts.forEach(function(a) {
-            var s = a.status || 'confirmado';
-            if (!seen[s]) { seen[s] = true; dots += '<div class="cal-dot ' + s + '"></div>'; }
+        let dots = '';
+        if (appts.length) {
+          const seen = {};
+          appts.forEach(a => {
+            const s = a.status || 'confirmado';
+            if (!seen[s]) { seen[s] = true; dots += `<div class="cal-dot ${s}"></div>`; }
           });
-          inner = '<div class="cal-dots"><span class="cal-day-count">' + appts.length + '</span>' + dots + '</div>';
+          dots = `<div class="cal-dots"><span class="cal-day-count">${appts.length}</span>${dots}</div>`;
         }
 
-        return '<div class="' + cls + '" data-date="' + dateStr + '">' +
-          '<div class="cal-day-num">' + day + '</div>' + inner + '</div>';
-      }
+        return `<div class="${cls}" data-date="${ds}"><div class="cal-day-num">${day}</div>${dots}</div>`;
+      },
 
-      function selectDay(dateStr) {
-        state.selectedDate = dateStr;
-        renderGrid();
+      selectDay(ds) {
+        this.selected = ds;
+        this.renderGrid();
+        const appts = this.byDate(ds).sort((a,b) => (a.data_hora||'').localeCompare(b.data_hora||''));
+        this.renderDayPanel(ds, appts);
+      },
 
-        var appts = byDate(state.monthDados, dateStr).sort(function(a, b) {
-          return (a.data_hora || '').localeCompare(b.data_hora || '');
-        });
+      renderDayPanel(ds, appts) {
+        const panel = document.getElementById('day-panel');
+        const d = new Date(`${ds}T00:00:00`);
+        const dayFmt = `${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
 
-        renderDayPanel(dateStr, appts);
-      }
+        const items = appts.length
+          ? `<div class="day-panel-list">${appts.map(a => {
+              const hora = (a.data_hora||'').slice(11,16);
+              const s = a.status || 'confirmado';
+              const valor = a.valor ? `R$ ${Number(a.valor).toFixed(2).replace('.',',')}` : '';
+              return `<div class="day-appt-item ${s}">
+                <div class="day-appt-time">${hora}</div>
+                <div class="day-appt-info">
+                  <div class="day-appt-pet">${esc(a.pet_nome||'—')}</div>
+                  <div class="day-appt-serv">${esc(a.servicos_nomes||'—')}</div>
+                  <div class="day-appt-meta">${esc(a.cliente_nome||'—')}${a.funcionario_nome ? ' · '+esc(a.funcionario_nome) : ''}</div>
+                </div>
+                <div class="day-appt-right">
+                  <span class="badge-status badge-${s}">${STATUS_LABEL[s]}</span>
+                  ${valor ? `<div class="day-appt-valor">${valor}</div>` : ''}
+                </div>
+                <a href="/agendamentos/${a.id}/editar" class="btn-acao editar" title="Editar"><i class="bi bi-pencil-fill"></i></a>
+              </div>`;
+            }).join('')}</div>`
+          : '<div class="day-panel-empty"><i class="bi bi-calendar2-x"></i><span>Nenhum agendamento neste dia</span></div>';
 
-      function renderDayPanel(dateStr, appts) {
-        var panel = document.getElementById('day-panel');
-        if (!panel) return;
+        panel.innerHTML = `
+          <div class="day-panel-header">
+            <div>
+              <div class="day-panel-label"><i class="bi bi-calendar-day"></i> ${DIAS_FULL[d.getDay()]}</div>
+              <div class="day-panel-date">${dayFmt}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="day-panel-count">${appts.length} agendamento${appts.length !== 1 ? 's' : ''}</span>
+              <button class="week-close-btn" onclick="cal.closeDay()" title="Fechar"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+          ${items}`;
+
         panel.style.display = 'block';
-
-        var d = new Date(dateStr + 'T00:00:00');
-        var dayName = DIAS_FULL[d.getDay()];
-        var dayFmt = d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
-        var count = appts.length;
-
-        var html = '<div class="day-panel-header">' +
-          '<div>' +
-            '<div class="day-panel-label"><i class="bi bi-calendar-day"></i> ' + dayName + '</div>' +
-            '<div class="day-panel-date">' + dayFmt + '</div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px">' +
-            '<span class="day-panel-count">' + count + ' agendamento' + (count !== 1 ? 's' : '') + '</span>' +
-            '<button class="week-close-btn" onclick="calFecharDia()" title="Fechar"><i class="bi bi-x-lg"></i></button>' +
-          '</div>' +
-        '</div>';
-
-        if (count === 0) {
-          html += '<div class="day-panel-empty">' +
-            '<i class="bi bi-calendar2-x"></i>' +
-            '<span>Nenhum agendamento neste dia</span>' +
-          '</div>';
-        } else {
-          html += '<div class="day-panel-list">';
-          appts.forEach(function(a) {
-            var hora = (a.data_hora || '').slice(11, 16);
-            var status = a.status || 'confirmado';
-            var label = STATUS_LABEL[status] || status;
-            var valor = a.valor ? 'R$ ' + Number(a.valor).toFixed(2).replace('.', ',') : '';
-            html +=
-              '<div class="day-appt-item ' + status + '">' +
-                '<div class="day-appt-time">' + hora + '</div>' +
-                '<div class="day-appt-info">' +
-                  '<div class="day-appt-pet">' + (a.pet_nome || '—') + '</div>' +
-                  '<div class="day-appt-serv">' + (a.servicos_nomes || '—') + '</div>' +
-                  '<div class="day-appt-meta">' + (a.cliente_nome || '—') + (a.funcionario_nome ? ' &middot; ' + a.funcionario_nome : '') + '</div>' +
-                '</div>' +
-                '<div class="day-appt-right">' +
-                  '<span class="badge-status badge-' + status + '">' + label + '</span>' +
-                  (valor ? '<div class="day-appt-valor">' + valor + '</div>' : '') +
-                '</div>' +
-                '<a href="/agendamentos/' + a.id + '/editar" class="btn-acao editar" title="Editar" style="flex-shrink:0"><i class="bi bi-pencil-fill"></i></a>' +
-              '</div>';
-          });
-          html += '</div>';
-        }
-
-        panel.innerHTML = html;
         panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
+      },
 
-      // Funções globais
-      window.calPrevMonth = function() {
-        if (state.month === 0) { state.month = 11; state.year--; } else state.month--;
-        state.selectedDate = null;
-        closePicker();
+      closeDay() {
+        this.selected = null;
         document.getElementById('day-panel').style.display = 'none';
-        loadMonth();
-      };
+        this.renderGrid();
+      },
 
-      window.calNextMonth = function() {
-        if (state.month === 11) { state.month = 0; state.year++; } else state.month++;
-        state.selectedDate = null;
-        closePicker();
+      go(dy, dm) {
+        let m = this.month + dm, y = this.year + dy;
+        if (m < 0) { m = 11; y--; }
+        if (m > 11) { m = 0; y++; }
+        this.month = m; this.year = y;
+        this.selected = null;
+        this.closePicker();
         document.getElementById('day-panel').style.display = 'none';
-        loadMonth();
-      };
+        this.loadMonth();
+      },
 
-      window.calToday = function() {
-        var t = new Date();
-        state.year = t.getFullYear();
-        state.month = t.getMonth();
-        state.selectedDate = null;
-        closePicker();
+      goToday() {
+        const t = new Date();
+        this.year = t.getFullYear(); this.month = t.getMonth();
+        this.selected = null;
+        this.closePicker();
         document.getElementById('day-panel').style.display = 'none';
-        loadMonth();
-      };
+        this.loadMonth();
+      },
 
-      function closePicker() {
-        var picker = document.getElementById('cal-picker');
-        var chevron = document.getElementById('cal-picker-chevron');
-        if (picker) picker.style.display = 'none';
-        if (chevron) chevron.style.transform = '';
-      }
+      closePicker() {
+        document.getElementById('cal-picker').style.display = 'none';
+        document.getElementById('cal-picker-chevron').style.transform = '';
+      },
 
-      function renderPicker() {
-        var picker = document.getElementById('cal-picker');
-        if (!picker) return;
-        var realToday = new Date();
-        var html = '<div class="cal-picker-year-row">' +
-          '<button class="cal-picker-year-btn" data-py="-1"><i class="bi bi-chevron-left"></i></button>' +
-          '<span class="cal-picker-year-label">' + pickerYear + '</span>' +
-          '<button class="cal-picker-year-btn" data-py="1"><i class="bi bi-chevron-right"></i></button>' +
-        '</div><div class="cal-picker-months">';
-        MESES_CURTO.forEach(function(m, i) {
-          var isSel = (pickerYear === state.year && i === state.month);
-          var isHoje = (pickerYear === realToday.getFullYear() && i === realToday.getMonth());
-          var cls = 'cal-picker-month-btn' + (isSel ? ' is-selected' : (isHoje ? ' is-today' : ''));
-          html += '<button class="' + cls + '" data-mi="' + i + '">' + m + '</button>';
-        });
-        picker.innerHTML = html + '</div>';
-
-        picker.querySelectorAll('[data-py]').forEach(function(btn) {
-          btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            pickerYear += parseInt(this.dataset.py);
-            renderPicker();
-          });
-        });
-        picker.querySelectorAll('[data-mi]').forEach(function(btn) {
-          btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var month = parseInt(this.dataset.mi);
-            state.year = pickerYear;
-            state.month = month;
-            state.selectedDate = null;
-            closePicker();
-            document.getElementById('day-panel').style.display = 'none';
-            loadMonth();
-          });
-        });
-      }
-
-      window.calTogglePicker = function(e) {
-        if (e) e.stopPropagation();
-        var picker = document.getElementById('cal-picker');
-        var chevron = document.getElementById('cal-picker-chevron');
-        if (!picker) return;
+      togglePicker(e) {
+        e && e.stopPropagation();
+        const picker = document.getElementById('cal-picker');
         if (picker.style.display === 'none') {
-          pickerYear = state.year;
+          this.pickerYear = this.year;
           picker.style.display = 'block';
-          renderPicker();
-          if (chevron) chevron.style.transform = 'rotate(180deg)';
+          this.renderPicker();
+          document.getElementById('cal-picker-chevron').style.transform = 'rotate(180deg)';
         } else {
-          closePicker();
+          this.closePicker();
         }
-      };
+      },
 
-      document.addEventListener('click', function() {
-        var picker = document.getElementById('cal-picker');
-        if (picker && picker.style.display !== 'none') closePicker();
-      });
+      renderPicker() {
+        const picker = document.getElementById('cal-picker');
+        const now = new Date();
+        const months = MESES_CURTO.map((m, i) => {
+          const isSel = this.pickerYear === this.year && i === this.month;
+          const isNow = this.pickerYear === now.getFullYear() && i === now.getMonth();
+          const cls = 'cal-picker-month-btn' + (isSel ? ' is-selected' : isNow ? ' is-today' : '');
+          return `<button class="${cls}" data-mi="${i}">${m}</button>`;
+        }).join('');
 
-      window.calFecharDia = function() {
-        state.selectedDate = null;
-        document.getElementById('day-panel').style.display = 'none';
-        renderGrid();
-      };
+        picker.innerHTML = `
+          <div class="cal-picker-year-row">
+            <button class="cal-picker-year-btn" data-py="-1"><i class="bi bi-chevron-left"></i></button>
+            <span class="cal-picker-year-label">${this.pickerYear}</span>
+            <button class="cal-picker-year-btn" data-py="1"><i class="bi bi-chevron-right"></i></button>
+          </div>
+          <div class="cal-picker-months">${months}</div>`;
 
-      window.toggleView = function(view) {
-        var calSection = document.getElementById('cal-section');
-        var listSection = document.getElementById('list-section');
-        var weekSection = document.getElementById('week-section');
-        var filterBar = document.getElementById('filter-bar');
-        var btnLista = document.getElementById('btn-lista');
-        var btnCal = document.getElementById('btn-cal');
-        var btnSemana = document.getElementById('btn-semana');
-
-        calSection.style.display = 'none';
-        listSection.style.display = 'none';
-        if (weekSection) weekSection.style.display = 'none';
-        filterBar.style.display = 'none';
-        [btnLista, btnCal, btnSemana].forEach(function(b) { if (b) b.classList.remove('active'); });
-
-        if (view === 'calendario') {
-          calSection.style.display = 'block';
-          btnCal.classList.add('active');
-          if (state.monthDados.length === 0 && !state.loading) loadMonth();
-        } else if (view === 'semana') {
-          if (weekSection) weekSection.style.display = 'block';
-          if (btnSemana) btnSemana.classList.add('active');
-          if (window.initWeekCal) window.initWeekCal();
-        } else {
-          listSection.style.display = 'block';
-          filterBar.style.display = 'flex';
-          btnLista.classList.add('active');
-        }
-      };
-
-    })();
-
-    // ============================================================
-    // CALENDÁRIO SEMANAL
-    // ============================================================
-    (function() {
-      var STATUS_LABEL = { confirmado: 'Agendado', concluido: 'Concluído', cancelado: 'Cancelado', pendente: 'Pendente' };
-      var DIAS_CURTO = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-      var MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-      var MESES_CURTO = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-      var HOURS = [8,9,10,11,12,13,14,15,16,17,18];
-
-      var wState = { weekStart: null, dados: [], loading: false };
-      function pad2(n) { return String(n).padStart(2,'0'); }
-      function dateToStr(d) { return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
-      var todayStr = dateToStr(new Date());
-      function addDays(date, n) { var d=new Date(date.getTime()); d.setDate(d.getDate()+n); return d; }
-      function getMonday(date) {
-        var d=new Date(date.getTime()), day=d.getDay(), diff=day===0?-6:1-day;
-        d.setDate(d.getDate()+diff); return d;
+        picker.querySelectorAll('[data-py]').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            this.pickerYear += parseInt(btn.dataset.py);
+            this.renderPicker();
+          });
+        });
+        picker.querySelectorAll('[data-mi]').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            this.year = this.pickerYear;
+            this.month = parseInt(btn.dataset.mi);
+            this.selected = null;
+            this.closePicker();
+            document.getElementById('day-panel').style.display = 'none';
+            this.loadMonth();
+          });
+        });
       }
-      function escHtml(str) {
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-      }
+    };
 
-      async function fetchDados() {
-        var inicio=dateToStr(wState.weekStart), fim=dateToStr(addDays(wState.weekStart,7));
+    document.addEventListener('click', () => {
+      const picker = document.getElementById('cal-picker');
+      if (picker && picker.style.display !== 'none') cal.closePicker();
+    });
+
+    const week = {
+      start: null,
+      dados: [],
+      loading: false,
+
+      addDays(d, n) { const r = new Date(d); r.setDate(r.getDate()+n); return r; },
+
+      monday(d) {
+        const r = new Date(d), day = r.getDay();
+        r.setDate(r.getDate() + (day === 0 ? -6 : 1-day));
+        return r;
+      },
+
+      async loadWeek() {
+        this.loading = true;
+        this.renderGrid();
+        const inicio = dateStr(this.start), fim = dateStr(this.addDays(this.start, 7));
         try {
-          var r=await fetch('/agendamentos/calendario-dados?inicio='+inicio+'&fim='+fim);
-          var json=await r.json();
-          return json.ok?(json.dados||[]):[];
-        } catch(e) { return []; }
-      }
+          const r = await fetch(`/agendamentos/calendario-dados?inicio=${inicio}&fim=${fim}`);
+          const json = await r.json();
+          this.dados = json.ok ? (json.dados || []) : [];
+        } catch(e) { this.dados = []; }
+        this.loading = false;
+        this.renderGrid();
+      },
 
-      async function loadWeek() {
-        wState.loading=true; renderGrid();
-        wState.dados=await fetchDados();
-        wState.loading=false; renderGrid();
-      }
-
-      function renderGrid() {
-        var grid=document.getElementById('week-grid'), title=document.getElementById('week-cal-title');
+      renderGrid() {
+        const grid = document.getElementById('week-grid');
+        const title = document.getElementById('week-cal-title');
         if (!grid) return;
-        var ws=wState.weekStart, we=addDays(ws,4);
-        if (title) {
-          var sM=MESES_CURTO[ws.getMonth()], eM=MESES_CURTO[we.getMonth()];
-          title.textContent = sM===eM
-            ? ws.getDate()+' – '+we.getDate()+' '+eM+' '+we.getFullYear()
-            : ws.getDate()+' '+sM+' – '+we.getDate()+' '+eM+' '+we.getFullYear();
-        }
-        if (wState.loading) {
-          grid.innerHTML='<div style="grid-column:1/-1;padding:44px;text-align:center;color:#3d4f6a;font-size:0.82rem"><i class="bi bi-arrow-clockwise"></i> Carregando...</div>';
+
+        const ws = this.start, we = this.addDays(ws, 4);
+        const sM = MESES_CURTO[ws.getMonth()], eM = MESES_CURTO[we.getMonth()];
+        title.textContent = sM === eM
+          ? `${ws.getDate()} – ${we.getDate()} ${eM} ${we.getFullYear()}`
+          : `${ws.getDate()} ${sM} – ${we.getDate()} ${eM} ${we.getFullYear()}`;
+
+        if (this.loading) {
+          grid.innerHTML = '<div class="cal-loading" style="grid-column:1/-1"><i class="bi bi-arrow-clockwise"></i> Carregando...</div>';
           return;
         }
 
-        var html='';
-        // Canto vazio + cabeçalhos dos dias
-        html+='<div class="week-col-empty"></div>';
-        for (var i=0;i<5;i++) {
-          var day=addDays(ws,i), dayStr=dateToStr(day), isToday=dayStr===todayStr;
-          html+='<div class="week-col-header'+(isToday?' week-today-col':'')+'">' +
-            '<div class="week-col-dayname">'+DIAS_CURTO[day.getDay()]+'</div>' +
-            '<div class="week-col-daynum'+(isToday?' week-today-num':'')+'">'+day.getDate()+'</div>' +
-            '</div>';
+        let html = '<div class="week-col-empty"></div>';
+        for (let i = 0; i < 5; i++) {
+          const day = this.addDays(ws, i), ds = dateStr(day), today = ds === TODAY;
+          html += `<div class="week-col-header${today ? ' week-today-col' : ''}">
+            <div class="week-col-dayname">${DIAS_CURTO[day.getDay()]}</div>
+            <div class="week-col-daynum${today ? ' week-today-num' : ''}">${day.getDate()}</div>
+          </div>`;
         }
-        // Linhas de horas
-        HOURS.forEach(function(h) {
-          html+='<div class="week-time-label">'+pad2(h)+':00</div>';
-          for (var i=0;i<5;i++) {
-            var day=addDays(ws,i), dayStr=dateToStr(day), isToday=dayStr===todayStr;
-            var cellAppts=wState.dados.filter(function(a) {
-              return (a.data_hora||'').slice(0,10)===dayStr && parseInt((a.data_hora||'').slice(11,13),10)===h;
+
+        HOURS.forEach(h => {
+          html += `<div class="week-time-label">${pad2(h)}:00</div>`;
+          for (let i = 0; i < 5; i++) {
+            const day = this.addDays(ws, i), ds = dateStr(day), today = ds === TODAY;
+            const appts = this.dados.filter(a =>
+              (a.data_hora||'').slice(0,10) === ds && parseInt((a.data_hora||'').slice(11,13),10) === h
+            );
+            html += `<div class="week-cell${today ? ' week-today-cell' : ''}${appts.length ? '' : ' week-cell-empty'}" data-date="${ds}" data-hour="${pad2(h)}:00">`;
+            appts.forEach(a => {
+              const hora = (a.data_hora||'').slice(11,16), s = a.status||'confirmado';
+              html += `<div class="week-appt-card ${s}" data-appt-id="${a.id}">
+                <div class="week-appt-time">${hora}</div>
+                <div class="week-appt-pet">${esc(a.pet_nome||'—')}</div>
+                <div class="week-appt-serv">${esc(a.servicos_nomes||'—')}</div>
+              </div>`;
             });
-            html+='<div class="week-cell'+(isToday?' week-today-cell':'')+(cellAppts.length===0?' week-cell-empty':'')+'" data-date="'+dayStr+'" data-hour="'+pad2(h)+':00">';
-            cellAppts.forEach(function(a) {
-              var hora=(a.data_hora||'').slice(11,16), s=a.status||'confirmado';
-              html+='<div class="week-appt-card '+s+'" data-appt-id="'+a.id+'">' +
-                '<div class="week-appt-time">'+hora+'</div>' +
-                '<div class="week-appt-pet">'+escHtml(a.pet_nome||'—')+'</div>' +
-                '<div class="week-appt-serv">'+escHtml(a.servicos_nomes||'—')+'</div>' +
-                '</div>';
-            });
-            html+='</div>';
+            html += '</div>';
           }
         });
 
-        grid.innerHTML=html;
-        grid.querySelectorAll('.week-appt-card').forEach(function(el) {
-          el.addEventListener('click', function() { weekShowDetail(this.dataset.apptId); });
+        grid.innerHTML = html;
+        grid.querySelectorAll('.week-appt-card').forEach(el => {
+          el.addEventListener('click', () => this.showDetail(el.dataset.apptId));
         });
-        grid.querySelectorAll('.week-cell-empty').forEach(function(el) {
-          el.addEventListener('click', function() {
-            window.location.href = '/agendamentos/novo?data=' + this.dataset.date + '&hora=' + this.dataset.hour;
+        grid.querySelectorAll('.week-cell-empty').forEach(el => {
+          el.addEventListener('click', () => {
+            location.href = `/agendamentos/novo?data=${el.dataset.date}&hora=${el.dataset.hour}`;
           });
         });
-      }
+      },
 
-      function weekShowDetail(id) {
-        var appt=wState.dados.find(function(a){ return String(a.id)===String(id); });
+      showDetail(id) {
+        const appt = this.dados.find(a => String(a.id) === String(id));
         if (!appt) return;
-        var panel=document.getElementById('week-detail-panel');
-        if (!panel) return;
-        panel.style.display='block';
+        const panel = document.getElementById('week-detail-panel');
+        const hora = (appt.data_hora||'').slice(11,16);
+        const ds = (appt.data_hora||'').slice(0,10);
+        const d = new Date(`${ds}T00:00:00`);
+        const dateFmt = `${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
+        const s = appt.status || 'confirmado';
+        const valor = appt.valor ? `R$ ${Number(appt.valor).toFixed(2).replace('.',',')}` : '';
+        const canComplete = s !== 'concluido' && s !== 'cancelado';
 
-        var hora=(appt.data_hora||'').slice(11,16);
-        var dateStr=(appt.data_hora||'').slice(0,10);
-        var d=new Date(dateStr+'T00:00:00');
-        var dateFmt=d.getDate()+' de '+MESES[d.getMonth()]+' de '+d.getFullYear();
-        var status=appt.status||'confirmado';
-        var label=STATUS_LABEL[status]||status;
-        var valor=appt.valor?'R$ '+Number(appt.valor).toFixed(2).replace('.',','):'';
-        var canComplete=status!=='concluido'&&status!=='cancelado';
+        panel.innerHTML = `
+          <div class="day-panel-header">
+            <div>
+              <div class="day-panel-label"><i class="bi bi-calendar-event"></i> ${esc(appt.pet_nome||'—')}</div>
+              <div class="day-panel-date">${hora} · ${dateFmt}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge-status badge-${s}">${STATUS_LABEL[s]}</span>
+              <button class="week-close-btn" onclick="week.closeDetail()" title="Fechar"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+          <div class="day-appt-item ${s}">
+            <div class="day-appt-time">${hora}</div>
+            <div class="day-appt-info">
+              <div class="day-appt-pet">${esc(appt.pet_nome||'—')}</div>
+              <div class="day-appt-serv">${esc(appt.servicos_nomes||'—')}</div>
+              <div class="day-appt-meta">${esc(appt.cliente_nome||'—')}${appt.funcionario_nome ? ' · '+esc(appt.funcionario_nome) : ''} · ${esc(dateFmt)}</div>
+            </div>
+            <div class="day-appt-right">
+              <span class="badge-status badge-${s}">${STATUS_LABEL[s]}</span>
+              ${valor ? `<div class="day-appt-valor">${valor}</div>` : ''}
+            </div>
+          </div>
+          <div class="detail-actions">
+            ${canComplete ? `<button class="btn-acao btn-concluir" onclick="concluir(${appt.id})"><i class="bi bi-check-lg"></i> Concluir</button>` : ''}
+            <a href="/agendamentos/${appt.id}/editar" class="btn-acao editar"><i class="bi bi-pencil-fill"></i> Editar</a>
+            <button class="btn-acao excluir" onclick="excluir('/agendamentos/${appt.id}')"><i class="bi bi-trash-fill"></i> Excluir</button>
+          </div>`;
 
-        var html=
-          '<div class="day-panel-header">' +
-            '<div>' +
-              '<div class="day-panel-label"><i class="bi bi-calendar-event"></i> '+escHtml(appt.pet_nome||'—')+'</div>' +
-              '<div class="day-panel-date">'+hora+' &middot; '+dateFmt+'</div>' +
-            '</div>' +
-            '<div style="display:flex;align-items:center;gap:8px">' +
-              '<span class="badge-status badge-'+status+'">'+label+'</span>' +
-              '<button class="week-close-btn" onclick="weekCloseDetail()" title="Fechar"><i class="bi bi-x-lg"></i></button>' +
-            '</div>' +
-          '</div>' +
-          '<div class="day-appt-item '+status+'">' +
-            '<div class="day-appt-time">'+hora+'</div>' +
-            '<div class="day-appt-info">' +
-              '<div class="day-appt-pet">'+escHtml(appt.pet_nome||'—')+'</div>' +
-              '<div class="day-appt-serv">'+escHtml(appt.servicos_nomes||'—')+'</div>' +
-              '<div class="day-appt-meta">'+escHtml(appt.cliente_nome||'—')+(appt.funcionario_nome?' &middot; '+escHtml(appt.funcionario_nome):'')+' &middot; '+escHtml(dateFmt)+'</div>' +
-            '</div>' +
-            '<div class="day-appt-right">' +
-              '<span class="badge-status badge-'+status+'">'+label+'</span>' +
-              (valor?'<div class="day-appt-valor">'+valor+'</div>':'') +
-            '</div>' +
-          '</div>' +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05)">' +
-            (canComplete?'<button class="btn-acao" onclick="weekConcluir('+appt.id+')" title="Marcar como concluído" style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.2);width:auto;padding:0 14px;gap:6px"><i class="bi bi-check-lg"></i> Concluir</button>':'') +
-            '<a href="/agendamentos/'+appt.id+'/editar" class="btn-acao editar" style="width:auto;padding:0 14px;gap:6px"><i class="bi bi-pencil-fill"></i> Editar</a>' +
-            '<button class="btn-acao excluir" onclick="excluir(\'/agendamentos/'+appt.id+'\')" title="Excluir" style="width:auto;padding:0 14px;gap:6px"><i class="bi bi-trash-fill"></i> Excluir</button>' +
-          '</div>';
+        panel.style.display = 'block';
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      },
 
-        panel.innerHTML=html;
-        panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+      closeDetail() { document.getElementById('week-detail-panel').style.display = 'none'; },
+
+      prev()  { this.start = this.addDays(this.start, -7); this.closeDetail(); this.loadWeek(); },
+      next()  { this.start = this.addDays(this.start,  7); this.closeDetail(); this.loadWeek(); },
+      today() { this.start = this.monday(new Date()); this.closeDetail(); this.loadWeek(); },
+
+      init() {
+        if (!this.start) this.start = this.monday(new Date());
+        if (!this.dados.length && !this.loading) this.loadWeek(); else this.renderGrid();
       }
-
-      window.weekCloseDetail=function() {
-        var p=document.getElementById('week-detail-panel');
-        if(p) p.style.display='none';
-      };
-
-      window.weekConcluir=function(id) {
-        fetch('/agendamentos/'+id+'/concluir',{method:'POST'})
-          .then(function(r){return r.json();})
-          .then(function(d){if(d.ok)window.location.href='/agendamentos?sucesso=concluido';});
-      };
-
-      window.weekPrev=function() { wState.weekStart=addDays(wState.weekStart,-7); window.weekCloseDetail(); loadWeek(); };
-      window.weekNext=function() { wState.weekStart=addDays(wState.weekStart,7); window.weekCloseDetail(); loadWeek(); };
-      window.weekToday=function() { wState.weekStart=getMonday(new Date()); window.weekCloseDetail(); loadWeek(); };
-
-      window.initWeekCal=function() {
-        if(!wState.weekStart) wState.weekStart=getMonday(new Date());
-        if(wState.dados.length===0&&!wState.loading) loadWeek(); else renderGrid();
-      };
-    })();
+    };
   </script>
 
 </body>

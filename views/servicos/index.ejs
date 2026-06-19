@@ -143,17 +143,13 @@
     </div>
     <% } %>
 
-    <div id="toast-sucesso" style="display:none;position:fixed;bottom:28px;right:28px;z-index:9999;align-items:center;gap:10px;background:#0f1f17;border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:260px;">
-      <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <i class="bi bi-check-circle-fill" style="color:#10b981;font-size:1rem"></i>
-      </div>
-      <span style="font-size:0.875rem;font-weight:500;color:#f1f5f9;">Preço atualizado com sucesso!</span>
+    <div id="toast-sucesso" class="toast-sucesso" style="display:none">
+      <div class="toast-icon"><i class="bi bi-check-circle-fill"></i></div>
+      <span class="toast-text">Preço atualizado com sucesso!</span>
     </div>
-    <div id="toast-erro" style="display:none;position:fixed;bottom:28px;right:28px;z-index:9999;align-items:center;gap:10px;background:#1f0f0f;border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:260px;">
-      <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <i class="bi bi-x-circle-fill" style="color:#f87171;font-size:1rem"></i>
-      </div>
-      <span style="font-size:0.875rem;font-weight:500;color:#f1f5f9;">Erro ao salvar. Tente novamente.</span>
+    <div id="toast-erro" class="toast-sucesso erro" style="display:none">
+      <div class="toast-icon"><i class="bi bi-x-circle-fill"></i></div>
+      <span class="toast-text">Erro ao salvar. Tente novamente.</span>
     </div>
 
   </main>
