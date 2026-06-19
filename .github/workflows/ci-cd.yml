@@ -24,8 +24,8 @@ jobs:
       - name: Instalar dependências
         run: npm install
 
-      - name: Verificar sintaxe (entry point)
-        run: node --check app.js
+      - name: Verificar sintaxe
+        run: node --check app.js && node --check routes/*.routes.js && node --check utils/helpers.js
 
       - name: Inicializar banco de dados
         run: npm run init-db
