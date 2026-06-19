@@ -13,10 +13,8 @@
 
   <%- include('../partials/sidebar') %>
 
-  <!-- ── Main Content ── -->
   <main class="main-content">
 
-    <!-- Header -->
     <div class="dash-header">
       <div>
         <div class="dash-greeting">Olá, <%= usuario.nome.split(' ')[0] %>!</div>
@@ -28,7 +26,6 @@
       </div>
     </div>
 
-    <!-- Cards de resumo -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon green"><i class="bi bi-people-fill"></i></div>
@@ -62,10 +59,8 @@
 
     <div class="two-col-grid">
 
-      <!-- Coluna esquerda: Clientes + Pets -->
-      <div style="display:flex; flex-direction:column; gap:24px">
+      <div class="dash-col">
 
-        <!-- Clientes Cadastrados -->
         <div class="section-card dash-card">
           <div class="section-title">
             <i class="bi bi-person-lines-fill"></i> Clientes Cadastrados
@@ -76,23 +71,22 @@
               Nenhum cliente cadastrado ainda.
             </div>
           <% } else { %>
-            <div class="scroll-list" style="display:flex; flex-direction:column; gap:10px; margin-top:12px">
+            <div class="scroll-list dash-list">
               <% ultimosClientes.forEach(function(c) { %>
-                <div style="display:flex; justify-content:space-between; align-items:center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04)">
+                <div class="dash-list-item">
                   <span class="nome-destaque"><%= c.nome %></span>
-                  <span style="font-size:0.72rem; color:#94a3b8">
+                  <span class="dash-list-date">
                     <%= new Date(c.criado_em.replace(' ', 'T') + 'Z').toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %>
                   </span>
                 </div>
               <% }) %>
             </div>
             <div class="dash-card-footer">
-              <a href="/clientes" style="font-size:0.82rem; color:#6b9bf5; text-decoration:none">Ver todos os clientes &rarr;</a>
+              <a href="/clientes" class="dash-link">Ver todos os clientes &rarr;</a>
             </div>
           <% } %>
         </div>
 
-        <!-- Pets Cadastrados -->
         <div class="section-card dash-card">
           <div class="section-title">
             <i class="bi bi-heart-fill"></i> Pets Cadastrados
@@ -103,31 +97,29 @@
               Nenhum pet cadastrado ainda.
             </div>
           <% } else { %>
-            <div class="scroll-list" style="display:flex; flex-direction:column; gap:10px; margin-top:12px">
+            <div class="scroll-list dash-list">
               <% ultimosPets.forEach(function(p) { %>
-                <div style="display:flex; justify-content:space-between; align-items:center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04)">
-                  <div style="display:flex; flex-direction:column; gap:2px">
+                <div class="dash-list-item">
+                  <div class="dash-list-col">
                     <span class="nome-destaque"><%= p.nome %></span>
-                    <span style="font-size:0.72rem; color:#64748b">
+                    <span class="dash-list-meta">
                       <%= p.especie %><% if (p.raca) { %> &bull; <%= p.raca %><% } %>
                     </span>
                   </div>
-                  <span style="font-size:0.72rem; color:#94a3b8"><%= p.cliente_nome || '—' %></span>
+                  <span class="dash-list-date"><%= p.cliente_nome || '—' %></span>
                 </div>
               <% }) %>
             </div>
             <div class="dash-card-footer">
-              <a href="/pets" style="font-size:0.82rem; color:#6b9bf5; text-decoration:none">Ver todos os pets &rarr;</a>
+              <a href="/pets" class="dash-link">Ver todos os pets &rarr;</a>
             </div>
           <% } %>
         </div>
 
       </div>
 
-      <!-- Coluna direita: Agendamentos + Funcionários -->
-      <div style="display:flex; flex-direction:column; gap:24px">
+      <div class="dash-col">
 
-        <!-- Agendamentos -->
         <div class="section-card dash-card">
           <div class="section-title">
             <i class="bi bi-calendar2-week-fill"></i> Agendamentos
@@ -138,13 +130,13 @@
               Nenhum agendamento cadastrado ainda.
             </div>
           <% } else { %>
-            <div class="scroll-list" style="display:flex; flex-direction:column; gap:8px; margin-top:12px">
+            <div class="scroll-list dash-list">
               <% agendamentos.forEach(function(a) { %>
-                <div style="display:flex; justify-content:space-between; align-items:center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04)">
-                  <div style="display:flex; flex-direction:column; gap:2px">
+                <div class="dash-list-item">
+                  <div class="dash-list-col">
                     <span class="nome-destaque"><%= a.pet_nome || '—' %></span>
-                    <span style="font-size:0.72rem; color:#64748b"><%= a.servico_nome || '—' %></span>
-                    <span style="font-size:0.7rem; color:#475569">
+                    <span class="dash-list-meta"><%= a.servico_nome || '—' %></span>
+                    <span class="dash-list-meta">
                       <%= new Date(a.data_hora.replace(' ', 'T')).toLocaleDateString('pt-BR') %>
                       &bull;
                       <%= new Date(a.data_hora.replace(' ', 'T')).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) %>
@@ -163,12 +155,11 @@
               <% }) %>
             </div>
             <div class="dash-card-footer">
-              <a href="/agendamentos" style="font-size:0.82rem; color:#6b9bf5; text-decoration:none">Ver todos os agendamentos &rarr;</a>
+              <a href="/agendamentos" class="dash-link">Ver todos os agendamentos &rarr;</a>
             </div>
           <% } %>
         </div>
 
-        <!-- Funcionários -->
         <div class="section-card dash-card">
           <div class="section-title">
             <i class="bi bi-person-badge-fill"></i> Funcionários
@@ -179,12 +170,12 @@
               Nenhum funcionário cadastrado ainda.
             </div>
           <% } else { %>
-            <div class="scroll-list" style="display:flex; flex-direction:column; gap:10px; margin-top:12px">
+            <div class="scroll-list dash-list">
               <% ultimosFuncionarios.forEach(function(f) { %>
-                <div style="display:flex; justify-content:space-between; align-items:center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04)">
-                  <div style="display:flex; flex-direction:column; gap:2px">
+                <div class="dash-list-item">
+                  <div class="dash-list-col">
                     <span class="nome-destaque"><%= f.nome %></span>
-                    <span style="font-size:0.72rem; color:#64748b"><%= f.email %></span>
+                    <span class="dash-list-meta"><%= f.email %></span>
                   </div>
                   <% if (f.ativo === 0) { %>
                     <span style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:600;color:#6b7280;background:rgba(107,114,128,0.1);padding:2px 8px;border-radius:20px">
@@ -200,7 +191,7 @@
             </div>
             <% if (usuario.permissoes === 'administrador') { %>
               <div class="dash-card-footer">
-                <a href="/funcionarios" style="font-size:0.82rem; color:#6b9bf5; text-decoration:none">Gerenciar funcionários &rarr;</a>
+                <a href="/funcionarios" class="dash-link">Gerenciar funcionários &rarr;</a>
               </div>
             <% } %>
           <% } %>
@@ -209,8 +200,6 @@
       </div>
 
     </div>
-
-    <div style="height: 32px"></div>
 
   </main>
 
