@@ -603,3 +603,25 @@ a.sidebar-user:hover {
   flex-shrink: 0;
   padding-top: 12px;
 }
+
+.dash-col { display: flex; flex-direction: column; gap: 24px; }
+
+.dash-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+
+.dash-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.dash-list-item:last-child { border-bottom: none; }
+
+.dash-list-col { display: flex; flex-direction: column; gap: 2px; }
+.dash-list-meta { font-size: 0.72rem; color: #64748b; }
+.dash-list-date { font-size: 0.72rem; color: #94a3b8; }
+
+.dash-link { font-size: 0.82rem; color: #6b9bf5; text-decoration: none; }
+.dash-link:hover { color: #93c5fd; }
+
+.sidebar-user-info { flex: 1; min-width: 0; }

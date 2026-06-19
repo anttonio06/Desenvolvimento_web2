@@ -1011,3 +1011,174 @@
   color: rgba(16,185,129,0.28);
   pointer-events: none;
 }
+
+.cal-loading {
+  grid-column: 1 / -1;
+  padding: 44px;
+  text-align: center;
+  color: #3d4f6a;
+  font-size: 0.82rem;
+}
+
+.cal-picker-chevron {
+  font-size: 0.6rem;
+  transition: transform 0.18s;
+}
+
+.table-time {
+  color: #4a4a62;
+  font-size: 0.72rem;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.detail-actions .btn-acao {
+  width: auto;
+  padding: 0 14px;
+  gap: 6px;
+}
+
+.btn-concluir {
+  background: rgba(16,185,129,0.08);
+  color: #10b981;
+  border: 1px solid rgba(16,185,129,0.2);
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.pagination-info {
+  font-size: 0.78rem;
+  color: #4b5563;
+}
+
+.pagination-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  color: #94a3b8;
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.pagination-btn:hover {
+  background: rgba(255,255,255,0.07);
+  color: #cbd5e1;
+}
+
+.toast-sucesso {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #0f1f17;
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  min-width: 260px;
+}
+
+.toast-sucesso.excluido {
+  background: #1a1200;
+  border-color: rgba(251,146,60,0.3);
+}
+
+.toast-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(16,185,129,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #10b981;
+  font-size: 1rem;
+}
+
+.toast-sucesso.excluido .toast-icon {
+  background: rgba(251,146,60,0.15);
+  color: #fb923c;
+}
+
+.toast-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #f1f5f9;
+}
+
+.toast-sucesso.erro {
+  background: #1f0f0f;
+  border-color: rgba(239,68,68,0.3);
+}
+
+.toast-sucesso.erro .toast-icon {
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+}
+
+/* Pill badges */
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.badge-pill i { font-size: 0.55rem; }
+.badge-pill-green { color: #10b981; background: rgba(16,185,129,0.1); }
+.badge-pill-red   { color: #f87171; background: rgba(239,68,68,0.1); }
+.badge-pill-gray  { color: #6b7280; background: rgba(107,114,128,0.1); }
+
+/* Confirmation modal */
+.modal-danger .modal-content { border-color: rgba(239,68,68,0.2); }
+
+.modal-confirm-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.modal-confirm-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(239,68,68,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #f87171;
+  font-size: 1.1rem;
+}
