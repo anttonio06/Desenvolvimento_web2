@@ -15,7 +15,6 @@
 
   <main class="main-content">
 
-
     <div class="page-header">
       <div>
         <div class="page-title"><i class="bi bi-people-fill"></i> Clientes</div>
@@ -62,11 +61,11 @@
                 <td><%= c.email || '-' %></td>
                 <td>
                   <% if (c.total_pets > 0) { %>
-                    <span style="display:inline-flex; align-items:center; gap:5px; font-size:0.78rem; font-weight:600; color:#10b981; background:rgba(16,185,129,0.1); padding:3px 10px; border-radius:20px">
-                      <i class="bi bi-heart-fill" style="font-size:0.65rem"></i> <%= c.total_pets %>
+                    <span class="badge-pill badge-pill-green">
+                      <i class="bi bi-heart-fill"></i> <%= c.total_pets %>
                     </span>
                   <% } else { %>
-                    <span style="font-size:0.78rem; color:#374151">—</span>
+                    <span style="font-size:0.78rem;color:#374151">—</span>
                   <% } %>
                 </td>
                 <td class="acoes">
@@ -151,17 +150,15 @@
   </div>
 
   <!-- Modal Confirmação Exclusão -->
-  <div class="modal fade" id="modalConfirmar" tabindex="-1" aria-hidden="true">
+  <div class="modal fade modal-danger" id="modalConfirmar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
-      <div class="modal-content" style="border-radius:14px; border:1px solid rgba(239,68,68,0.2); background:#0f1624">
+      <div class="modal-content">
         <div class="modal-body p-4">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px">
-            <div style="width:40px; height:40px; border-radius:10px; background:rgba(239,68,68,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0">
-              <i class="bi bi-exclamation-triangle-fill" style="color:#f87171; font-size:1.1rem"></i>
-            </div>
-            <h5 style="margin:0; font-size:1rem; font-weight:700; color:#f1f5f9">Confirmar exclusão</h5>
+          <div class="modal-confirm-header">
+            <div class="modal-confirm-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <h5 style="margin:0;font-size:1rem;font-weight:700;color:#f1f5f9">Confirmar exclusão</h5>
           </div>
-          <p style="margin:0; font-size:0.875rem; color:#94a3b8; line-height:1.6">Deseja realmente excluir este cliente? Esta ação não pode ser desfeita.</p>
+          <p style="margin:0;font-size:0.875rem;color:#94a3b8;line-height:1.6">Deseja realmente excluir este cliente? Esta ação não pode ser desfeita.</p>
         </div>
         <div class="modal-footer border-0 pt-0 px-4 pb-4" style="gap:10px">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="flex:1">Cancelar</button>
@@ -172,11 +169,11 @@
   </div>
 
   <% if (sucesso) { %>
-  <div id="toast-sucesso" style="position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:10px;<%= sucesso === 'excluido' ? 'background:#1a1200;border:1px solid rgba(251,146,60,0.3)' : 'background:#0f1f17;border:1px solid rgba(16,185,129,0.3)' %>;border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:260px;">
-    <div style="width:32px;height:32px;border-radius:8px;<%= sucesso === 'excluido' ? 'background:rgba(251,146,60,0.15)' : 'background:rgba(16,185,129,0.15)' %>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <i class="bi <%= sucesso === 'excluido' ? 'bi-trash-fill' : 'bi-check-circle-fill' %>" style="color:<%= sucesso === 'excluido' ? '#fb923c' : '#10b981' %>;font-size:1rem"></i>
+  <div id="toast-sucesso" class="toast-sucesso <%= sucesso === 'excluido' ? 'excluido' : '' %>">
+    <div class="toast-icon">
+      <i class="bi <%= sucesso === 'excluido' ? 'bi-trash-fill' : 'bi-check-circle-fill' %>"></i>
     </div>
-    <span style="font-size:0.875rem;font-weight:500;color:#f1f5f9;">
+    <span class="toast-text">
       <%= sucesso === 'criado' ? 'Cliente cadastrado com sucesso!' : sucesso === 'excluido' ? 'Cliente excluído com sucesso!' : 'Cliente atualizado com sucesso!' %>
     </span>
   </div>
@@ -184,21 +181,19 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    var clienteEditandoId = null;
-    var _urlExcluir = null;
-    var _modalConfirmar = null;
+    let clienteEditandoId = null;
+    let _urlExcluir = null;
+    let _modal = null;
 
-    var toast = document.getElementById('toast-sucesso');
-    if (toast) {
-      setTimeout(function() {
-        toast.style.transition = 'opacity 0.4s';
-        toast.style.opacity = '0';
-        setTimeout(function() { toast.remove(); }, 400);
-      }, 3000);
-    }
+    const toast = document.getElementById('toast-sucesso');
+    if (toast) setTimeout(() => {
+      toast.style.transition = 'opacity 0.4s';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 400);
+    }, 3000);
 
     function mascaraTelefone(valor) {
-      var nums = valor.replace(/\D/g, '').slice(0, 11);
+      const nums = valor.replace(/\D/g, '').slice(0, 11);
       if (nums.length === 0) return '';
       if (nums.length <= 2) return '(' + nums;
       if (nums.length <= 7) return '(' + nums.slice(0,2) + ') ' + nums.slice(2);
@@ -206,28 +201,25 @@
     }
 
     document.getElementById('novo-telefone').addEventListener('input', function() {
-      var cursor = this.selectionStart;
-      var antigo = this.value;
-      this.value = mascaraTelefone(antigo);
+      this.value = mascaraTelefone(this.value);
     });
-
     document.getElementById('edit-telefone').addEventListener('input', function() {
       this.value = mascaraTelefone(this.value);
     });
 
     function mostrarErroNovo(msg) {
-      var el = document.getElementById('novo-erro');
+      const el = document.getElementById('novo-erro');
       el.textContent = msg;
       el.classList.remove('d-none');
     }
 
     function mostrarErroEdit(msg) {
-      var el = document.getElementById('edit-erro');
+      const el = document.getElementById('edit-erro');
       el.textContent = msg;
       el.classList.remove('d-none');
     }
 
-    document.getElementById('modalNovoCliente').addEventListener('show.bs.modal', function() {
+    document.getElementById('modalNovoCliente').addEventListener('show.bs.modal', () => {
       document.getElementById('novo-nome').value = '';
       document.getElementById('novo-telefone').value = '';
       document.getElementById('novo-email').value = '';
@@ -235,11 +227,11 @@
     });
 
     function cadastrarCliente() {
-      var nome = document.getElementById('novo-nome').value.trim();
-      var telefone = document.getElementById('novo-telefone').value.trim();
-      var email = document.getElementById('novo-email').value.trim();
-      var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
-      var emailPattern = /^[^\s@]+@[^\s@]+\.(com|com\.br|net|org)$/;
+      const nome = document.getElementById('novo-nome').value.trim();
+      const telefone = document.getElementById('novo-telefone').value.trim();
+      const email = document.getElementById('novo-email').value.trim();
+      const telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
+      const emailPattern = /^[^\s@]+@[^\s@]+\.(com|com\.br|net|org)$/;
 
       document.getElementById('novo-erro').classList.add('d-none');
 
@@ -252,8 +244,8 @@
       fetch('/clientes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome: nome, telefone: telefone, email: email })
-      }).then(function(r) { return r.json(); }).then(function(data) {
+        body: JSON.stringify({ nome, telefone, email })
+      }).then(r => r.json()).then(data => {
         if (data.ok) {
           location.href = '/clientes?sucesso=criado';
         } else if (data.erro === 'telefone_duplicado') {
@@ -267,8 +259,8 @@
     }
 
     document.getElementById('busca-cliente').addEventListener('input', function() {
-      var termo = this.value.toLowerCase();
-      document.querySelectorAll('#tabela-clientes tbody tr').forEach(function(tr) {
+      const termo = this.value.toLowerCase();
+      document.querySelectorAll('#tabela-clientes tbody tr').forEach(tr => {
         tr.style.display = tr.textContent.toLowerCase().includes(termo) ? '' : 'none';
       });
     });
@@ -280,40 +272,38 @@
       document.getElementById('edit-email').value = cliente.email;
       document.getElementById('edit-erro').classList.add('d-none');
 
-      var petsLista = document.getElementById('edit-pets-lista');
+      const petsLista = document.getElementById('edit-pets-lista');
       petsLista.innerHTML = '<div style="color:#4b5563;font-size:0.82rem;padding:6px 0">Carregando...</div>';
 
       new bootstrap.Modal(document.getElementById('modalEditarCliente')).show();
 
       fetch('/clientes/' + cliente.id + '/pets')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          var pets = data.pets || [];
+        .then(r => r.json())
+        .then(data => {
+          const pets = data.pets || [];
           if (pets.length === 0) {
             petsLista.innerHTML = '<div style="font-size:0.82rem;color:#4b5563;padding:6px 0"><i class="bi bi-heart" style="margin-right:5px"></i>Nenhum pet cadastrado.</div>';
             return;
           }
-          petsLista.innerHTML = pets.map(function(p) {
-            var detalhes = [p.especie];
-            if (p.raca) detalhes.push(p.raca);
-            if (p.porte) detalhes.push(p.porte);
-            return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.12);border-radius:10px;margin-bottom:6px">'
-              + '<i class="bi bi-heart-fill" style="color:#10b981;font-size:0.75rem;flex-shrink:0"></i>'
-              + '<div>'
-              + '<div style="font-size:0.85rem;font-weight:600;color:#f1f5f9">' + p.nome + '</div>'
-              + '<div style="font-size:0.75rem;color:#6b7280;margin-top:1px">' + detalhes.join(' · ') + '</div>'
-              + '</div>'
-              + '</div>';
+          petsLista.innerHTML = pets.map(p => {
+            const detalhes = [p.especie, p.raca, p.porte].filter(Boolean).join(' · ');
+            return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.12);border-radius:10px;margin-bottom:6px">
+              <i class="bi bi-heart-fill" style="color:#10b981;font-size:0.75rem;flex-shrink:0"></i>
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;color:#f1f5f9">${p.nome}</div>
+                <div style="font-size:0.75rem;color:#6b7280;margin-top:1px">${detalhes}</div>
+              </div>
+            </div>`;
           }).join('');
         });
     }
 
     function salvarEdicao() {
-      var nome = document.getElementById('edit-nome').value.trim();
-      var telefone = document.getElementById('edit-telefone').value.trim();
-      var email = document.getElementById('edit-email').value.trim();
-      var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
-      var emailPattern = /^[^\s@]+@[^\s@]+\.(com|com\.br|net|org)$/;
+      const nome = document.getElementById('edit-nome').value.trim();
+      const telefone = document.getElementById('edit-telefone').value.trim();
+      const email = document.getElementById('edit-email').value.trim();
+      const telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
+      const emailPattern = /^[^\s@]+@[^\s@]+\.(com|com\.br|net|org)$/;
 
       document.getElementById('edit-erro').classList.add('d-none');
 
@@ -326,8 +316,8 @@
       fetch('/clientes/' + clienteEditandoId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome: nome, telefone: telefone, email: email })
-      }).then(function(r) { return r.json(); }).then(function(data) {
+        body: JSON.stringify({ nome, telefone, email })
+      }).then(r => r.json()).then(data => {
         if (data.ok) {
           location.href = '/clientes?sucesso=editado';
         } else if (data.erro === 'telefone_duplicado') {
@@ -342,17 +332,16 @@
 
     function excluir(url) {
       _urlExcluir = url;
-      _modalConfirmar = new bootstrap.Modal(document.getElementById('modalConfirmar'));
-      _modalConfirmar.show();
+      _modal = new bootstrap.Modal(document.getElementById('modalConfirmar'));
+      _modal.show();
     }
 
-    document.getElementById('btnConfirmarExcluir').addEventListener('click', function() {
-      if (_urlExcluir) {
-        fetch(_urlExcluir, { method: 'DELETE' }).then(function() {
-          _modalConfirmar.hide();
-          location.href = '/clientes?sucesso=excluido';
-        });
-      }
+    document.getElementById('btnConfirmarExcluir').addEventListener('click', () => {
+      if (!_urlExcluir) return;
+      fetch(_urlExcluir, { method: 'DELETE' }).then(() => {
+        _modal.hide();
+        location.href = '/clientes?sucesso=excluido';
+      });
     });
   </script>
 

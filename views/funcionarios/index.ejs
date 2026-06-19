@@ -62,27 +62,23 @@
                 <td><%= u.email %></td>
                 <td>
                   <% if (u.permissoes === 'administrador') { %>
-                    <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:#f87171;background:rgba(239,68,68,0.1);padding:3px 10px;border-radius:20px">
-                      <i class="bi bi-shield-fill" style="font-size:0.55rem"></i> Administrador
+                    <span class="badge-pill badge-pill-red">
+                      <i class="bi bi-shield-fill"></i> Administrador
                     </span>
                   <% } else { %>
-                    <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:#10b981;background:rgba(16,185,129,0.1);padding:3px 10px;border-radius:20px">
-                      <i class="bi bi-person-badge-fill" style="font-size:0.55rem"></i> Funcionário
+                    <span class="badge-pill badge-pill-green">
+                      <i class="bi bi-person-badge-fill"></i> Funcionário
                     </span>
                   <% } %>
                 </td>
                 <td>
-                  <% if (u.permissoes === 'administrador') { %>
-                    <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:#10b981;background:rgba(16,185,129,0.1);padding:3px 10px;border-radius:20px">
-                      <i class="bi bi-circle-fill" style="font-size:0.5rem"></i> Ativo
-                    </span>
-                  <% } else if (u.ativo || u.ativo === null) { %>
-                    <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:#10b981;background:rgba(16,185,129,0.1);padding:3px 10px;border-radius:20px">
-                      <i class="bi bi-circle-fill" style="font-size:0.5rem"></i> Ativo
+                  <% if (u.permissoes === 'administrador' || u.ativo || u.ativo === null) { %>
+                    <span class="badge-pill badge-pill-green">
+                      <i class="bi bi-circle-fill"></i> Ativo
                     </span>
                   <% } else { %>
-                    <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:#6b7280;background:rgba(107,114,128,0.1);padding:3px 10px;border-radius:20px">
-                      <i class="bi bi-circle" style="font-size:0.5rem"></i> Inativo
+                    <span class="badge-pill badge-pill-gray">
+                      <i class="bi bi-circle"></i> Inativo
                     </span>
                   <% } %>
                 </td>
@@ -179,7 +175,7 @@
             <i class="bi bi-lock-fill"></i> Alterar senha
           </div>
           <div class="mb-3">
-            <label class="form-label fw-semibold">Nova senha <span class="fw-normal" style="color: #adb5bd; font-size: 0.78rem; text-transform: none;">(deixe em branco para manter)</span></label>
+            <label class="form-label fw-semibold">Nova senha <span class="fw-normal" style="color:#adb5bd;font-size:0.78rem;text-transform:none">(deixe em branco para manter)</span></label>
             <input type="password" id="edit-nova-senha" class="form-control" placeholder="Mínimo 6 caracteres">
           </div>
         </div>
@@ -227,14 +223,12 @@
   </div>
 
   <!-- Modal Confirmação Exclusão -->
-  <div class="modal fade" id="modalConfirmar" tabindex="-1" aria-hidden="true">
+  <div class="modal fade modal-danger" id="modalConfirmar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
-      <div class="modal-content" style="border-radius:14px;border:1px solid rgba(239,68,68,0.2);background:#0f1624">
+      <div class="modal-content">
         <div class="modal-body p-4">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-            <div style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <i class="bi bi-exclamation-triangle-fill" style="color:#f87171;font-size:1.1rem"></i>
-            </div>
+          <div class="modal-confirm-header">
+            <div class="modal-confirm-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
             <h5 style="margin:0;font-size:1rem;font-weight:700;color:#f1f5f9">Confirmar exclusão</h5>
           </div>
           <p id="modal-confirmar-msg" style="margin:0;font-size:0.875rem;color:#94a3b8;line-height:1.6"></p>
@@ -248,11 +242,11 @@
   </div>
 
   <% if (sucesso) { %>
-  <div id="toast-sucesso" style="position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:10px;<%= sucesso === 'excluido' ? 'background:#1a1200;border:1px solid rgba(251,146,60,0.3)' : 'background:#0f1f17;border:1px solid rgba(16,185,129,0.3)' %>;border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:260px;">
-    <div style="width:32px;height:32px;border-radius:8px;<%= sucesso === 'excluido' ? 'background:rgba(251,146,60,0.15)' : 'background:rgba(16,185,129,0.15)' %>;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <i class="bi <%= sucesso === 'excluido' ? 'bi-trash-fill' : 'bi-check-circle-fill' %>" style="color:<%= sucesso === 'excluido' ? '#fb923c' : '#10b981' %>;font-size:1rem"></i>
+  <div id="toast-sucesso" class="toast-sucesso <%= sucesso === 'excluido' ? 'excluido' : '' %>">
+    <div class="toast-icon">
+      <i class="bi <%= sucesso === 'excluido' ? 'bi-trash-fill' : 'bi-check-circle-fill' %>"></i>
     </div>
-    <span style="font-size:0.875rem;font-weight:500;color:#f1f5f9;">
+    <span class="toast-text">
       <%= sucesso === 'criado' ? 'Funcionário cadastrado com sucesso!' : sucesso === 'excluido' ? 'Funcionário excluído com sucesso!' : 'Funcionário atualizado com sucesso!' %>
     </span>
   </div>
@@ -260,21 +254,19 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    var editandoId = null;
-    var _idExcluir = null;
-    var _modalConfirmar = null;
+    let editandoId = null;
+    let _idExcluir = null;
+    let _modalConfirmar = null;
 
-    var toast = document.getElementById('toast-sucesso');
-    if (toast) {
-      setTimeout(function() {
-        toast.style.transition = 'opacity 0.4s';
-        toast.style.opacity = '0';
-        setTimeout(function() { toast.remove(); }, 400);
-      }, 3000);
-    }
+    const toast = document.getElementById('toast-sucesso');
+    if (toast) setTimeout(() => {
+      toast.style.transition = 'opacity 0.4s';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 400);
+    }, 3000);
 
     function mascaraTelefone(valor) {
-      var nums = valor.replace(/\D/g, '').slice(0, 11);
+      const nums = valor.replace(/\D/g, '').slice(0, 11);
       if (nums.length === 0) return '';
       if (nums.length <= 2) return '(' + nums;
       if (nums.length <= 7) return '(' + nums.slice(0,2) + ') ' + nums.slice(2);
@@ -285,26 +277,26 @@
     document.getElementById('edit-telefone').addEventListener('input', function() { this.value = mascaraTelefone(this.value); });
 
     document.getElementById('busca').addEventListener('input', function() {
-      var termo = this.value.toLowerCase();
-      document.querySelectorAll('#tabela-funcionarios tbody tr').forEach(function(tr) {
+      const termo = this.value.toLowerCase();
+      document.querySelectorAll('#tabela-funcionarios tbody tr').forEach(tr => {
         tr.style.display = tr.textContent.toLowerCase().includes(termo) ? '' : 'none';
       });
     });
 
-    document.getElementById('modalNovoFuncionario').addEventListener('show.bs.modal', function() {
-      ['novo-nome','novo-telefone','novo-email','novo-senha'].forEach(function(id) {
+    document.getElementById('modalNovoFuncionario').addEventListener('show.bs.modal', () => {
+      ['novo-nome','novo-telefone','novo-email','novo-senha'].forEach(id => {
         document.getElementById(id).value = '';
       });
       document.getElementById('novo-erro').classList.add('d-none');
     });
 
     function cadastrarFuncionario() {
-      var nome     = document.getElementById('novo-nome').value.trim();
-      var telefone = document.getElementById('novo-telefone').value.trim();
-      var email    = document.getElementById('novo-email').value.trim();
-      var senha    = document.getElementById('novo-senha').value;
-      var erroEl   = document.getElementById('novo-erro');
-      var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
+      const nome     = document.getElementById('novo-nome').value.trim();
+      const telefone = document.getElementById('novo-telefone').value.trim();
+      const email    = document.getElementById('novo-email').value.trim();
+      const senha    = document.getElementById('novo-senha').value;
+      const erroEl   = document.getElementById('novo-erro');
+      const telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
 
       erroEl.classList.add('d-none');
       if (!nome || !email || !senha || senha.length < 6 || (telefone && !telPattern.test(telefone))) {
@@ -317,7 +309,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome, telefone: telefone || null, email, senha })
-      }).then(function(r) { return r.json(); }).then(function(data) {
+      }).then(r => r.json()).then(data => {
         if (data.ok) {
           location.href = '/funcionarios?sucesso=criado';
         } else {
@@ -329,21 +321,21 @@
 
     function abrirEditar(u) {
       editandoId = u.id;
-      document.getElementById('edit-nome').value     = u.nome;
-      document.getElementById('edit-telefone').value = mascaraTelefone(u.telefone || '');
-      document.getElementById('edit-ativo').value    = (u.ativo === 0) ? '0' : '1';
+      document.getElementById('edit-nome').value      = u.nome;
+      document.getElementById('edit-telefone').value  = mascaraTelefone(u.telefone || '');
+      document.getElementById('edit-ativo').value     = (u.ativo === 0) ? '0' : '1';
       document.getElementById('edit-nova-senha').value = '';
       document.getElementById('edit-erro').classList.add('d-none');
       new bootstrap.Modal(document.getElementById('modalEditar')).show();
     }
 
     function salvarEdicao() {
-      var nome      = document.getElementById('edit-nome').value.trim();
-      var telefone  = document.getElementById('edit-telefone').value.trim();
-      var ativo     = document.getElementById('edit-ativo').value;
-      var novaSenha = document.getElementById('edit-nova-senha').value;
-      var erroEl    = document.getElementById('edit-erro');
-      var telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
+      const nome      = document.getElementById('edit-nome').value.trim();
+      const telefone  = document.getElementById('edit-telefone').value.trim();
+      const ativo     = document.getElementById('edit-ativo').value;
+      const novaSenha = document.getElementById('edit-nova-senha').value;
+      const erroEl    = document.getElementById('edit-erro');
+      const telPattern = /^\(\d{2}\) \d{5}-\d{4}$/;
 
       erroEl.classList.add('d-none');
       if (!nome || (telefone && !telPattern.test(telefone)) || (novaSenha && novaSenha.length < 6)) {
@@ -356,8 +348,8 @@
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome, telefone: telefone || null, ativo: parseInt(ativo), nova_senha: novaSenha || null })
-      }).then(function(r) { return r.json(); }).then(function(data) {
-        if (data.ok) { location.href = '/funcionarios?sucesso=editado'; }
+      }).then(r => r.json()).then(data => {
+        if (data.ok) location.href = '/funcionarios?sucesso=editado';
         else { erroEl.textContent = 'Preencha todos os campos corretamente.'; erroEl.classList.remove('d-none'); }
       });
     }
@@ -374,25 +366,25 @@
       new bootstrap.Modal(document.getElementById('modalAgendamentos')).show();
 
       fetch('/funcionarios/' + id + '/agendamentos')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          var ags = data.agendamentos || [];
+        .then(r => r.json())
+        .then(data => {
+          const ags = data.agendamentos || [];
           if (ags.length === 0) {
             document.getElementById('modal-ag-body').innerHTML =
               '<div style="text-align:center;padding:24px 0;color:#4b5563;font-size:0.875rem"><i class="bi bi-calendar2-x" style="font-size:2rem;display:block;margin-bottom:10px"></i>Nenhum agendamento vinculado.</div>';
             return;
           }
-          var sLabel = { confirmado:'Agendado', concluido:'Concluído', cancelado:'Cancelado', pendente:'Pendente' };
-          var sClass = { confirmado:'badge-confirmado', concluido:'badge-concluido', cancelado:'badge-cancelado', pendente:'badge-pendente' };
-          var html = '<table class="table-agendamentos" style="margin:0"><thead><tr><th>Data / Hora</th><th>Cliente</th><th>Pet</th><th>Serviços</th><th>Status</th></tr></thead><tbody>';
-          ags.forEach(function(a) {
-            var dt   = new Date(a.data_hora);
-            var data = dt.toLocaleDateString('pt-BR');
-            var hora = dt.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-            html += '<tr><td><strong>' + data + '</strong><br><small style="color:#4a4a62;font-size:0.72rem">' + hora + '</small></td>'
-              + '<td>' + (a.cliente_nome||'—') + '</td><td>' + (a.pet_nome||'—') + '</td>'
-              + '<td>' + (a.servicos_nomes||'—') + '</td>'
-              + '<td><span class="badge-status ' + (sClass[a.status]||'') + '">' + (sLabel[a.status]||a.status) + '</span></td></tr>';
+          const sLabel = { confirmado:'Agendado', concluido:'Concluído', cancelado:'Cancelado', pendente:'Pendente' };
+          const sClass = { confirmado:'badge-confirmado', concluido:'badge-concluido', cancelado:'badge-cancelado', pendente:'badge-pendente' };
+          let html = '<table class="table-agendamentos" style="margin:0"><thead><tr><th>Data / Hora</th><th>Cliente</th><th>Pet</th><th>Serviços</th><th>Status</th></tr></thead><tbody>';
+          ags.forEach(a => {
+            const dt   = new Date(a.data_hora);
+            const data = dt.toLocaleDateString('pt-BR');
+            const hora = dt.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+            html += `<tr><td><strong>${data}</strong><br><small class="table-time">${hora}</small></td>`
+              + `<td>${a.cliente_nome || '—'}</td><td>${a.pet_nome || '—'}</td>`
+              + `<td>${a.servicos_nomes || '—'}</td>`
+              + `<td><span class="badge-status ${sClass[a.status] || ''}">${sLabel[a.status] || a.status}</span></td></tr>`;
           });
           html += '</tbody></table>';
           document.getElementById('modal-ag-body').innerHTML = html;
@@ -402,14 +394,14 @@
     function excluir(id, nome) {
       _idExcluir = id;
       document.getElementById('modal-confirmar-msg').textContent =
-        'Deseja realmente excluir o funcionário "' + nome + '"? O acesso ao sistema será removido.';
+        `Deseja realmente excluir o funcionário "${nome}"? O acesso ao sistema será removido.`;
       _modalConfirmar = new bootstrap.Modal(document.getElementById('modalConfirmar'));
       _modalConfirmar.show();
     }
 
-    document.getElementById('btnConfirmarExcluir').addEventListener('click', function() {
+    document.getElementById('btnConfirmarExcluir').addEventListener('click', () => {
       if (!_idExcluir) return;
-      fetch('/funcionarios/' + _idExcluir, { method: 'DELETE' }).then(function() {
+      fetch('/funcionarios/' + _idExcluir, { method: 'DELETE' }).then(() => {
         _modalConfirmar.hide();
         location.href = '/funcionarios?sucesso=excluido';
       });
@@ -418,4 +410,3 @@
 
 </body>
 </html>
-
