@@ -46,6 +46,7 @@ router.post('/funcionarios', verificarAutenticacao, verificarAdmin, async (req, 
     const senhaHash = await bcrypt.hash(senha, 10);
 
     await dbTransaction(async () => {
+      // senha_texto armazena a senha legível para o botão "ver senha" no painel admin
       const result = await dbRun(
         'INSERT INTO usuarios (nome, email, senha, senha_texto, permissoes) VALUES (?, ?, ?, ?, ?)',
         [capitalize(nome), email.trim(), senhaHash, senha, 'funcionario']
@@ -122,6 +123,7 @@ router.delete('/funcionarios/:id', verificarAutenticacao, verificarAdmin, async 
     await dbTransaction(async () => {
       const func = await dbGet('SELECT id FROM funcionarios WHERE usuario_id = ?', [usuarioId]);
       if (func) {
+        // Preserva o histórico de agendamentos — apenas desvincula o funcionário
         await dbRun('UPDATE agendamentos SET funcionario_id = NULL WHERE funcionario_id = ?', [func.id]);
         await dbRun('DELETE FROM funcionarios WHERE id = ?', [func.id]);
       }

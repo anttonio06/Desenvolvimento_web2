@@ -72,6 +72,7 @@ router.put('/pets/:id', verificarAutenticacao, async (req, res) => {
 router.delete('/pets/:id', verificarAutenticacao, async (req, res) => {
   const id = req.params.id;
   try {
+    // Ordem importa: agendamento_servicos → agendamentos → pet (sem CASCADE nessa direção)
     await dbTransaction(async () => {
       await dbRun(
         'DELETE FROM agendamento_servicos WHERE agendamento_id IN (SELECT id FROM agendamentos WHERE pet_id = ?)',

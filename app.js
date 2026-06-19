@@ -35,13 +35,14 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 2,
-      httpOnly: true,
-      sameSite: 'lax'
+      maxAge: 1000 * 60 * 60 * 2, // 2 horas
+      httpOnly: true,   // bloqueia acesso ao cookie via JavaScript
+      sameSite: 'lax'  // proteção básica contra CSRF
     }
   })
 );
 
+// Torna `usuario` disponível em todos os templates EJS sem precisar passar em cada res.render
 app.use((req, res, next) => {
   res.locals.usuario = req.session.usuario || null;
   next();
@@ -75,7 +76,7 @@ app.delete('/usuarios/:id', verificarAutenticacao, async (req, res) => {
 });
 
 app.get('/dashboard', verificarAutenticacao, async (req, res) => {
-  res.set('Cache-Control', 'no-store');
+  res.set('Cache-Control', 'no-store'); // impede que o browser exiba o dashboard após logout pelo botão voltar
   try {
     const [
       totalClientesRow,
@@ -117,6 +118,7 @@ app.get('/dashboard', verificarAutenticacao, async (req, res) => {
     ]);
 
     const dataAtual = new Date();
+    // toISOString() retorna UTC — monta manualmente para não errar o dia no fuso horário local
     const hoje = dataAtual.getFullYear() + '-' + String(dataAtual.getMonth() + 1).padStart(2, '0') + '-' + String(dataAtual.getDate()).padStart(2, '0');
     const totalHoje = (agendamentos || []).filter(a => a.data_hora && a.data_hora.startsWith(hoje)).length;
 

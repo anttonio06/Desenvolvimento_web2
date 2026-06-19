@@ -20,6 +20,7 @@ function dbAll(sql, params = []) {
 
 function dbRun(sql, params = []) {
   return new Promise((resolve, reject) => {
+    // function() necessário: this.lastID e this.changes não existem em arrow function
     db.run(sql, params, function (err) {
       if (err) reject(err);
       else resolve(this);

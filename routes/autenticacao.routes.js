@@ -112,7 +112,7 @@ router.post('/esqueci-senha', async (req, res) => {
 
     if (usuario) {
       const token = crypto.randomBytes(32).toString('hex');
-      const expiry = Date.now() + 60 * 60 * 1000;
+      const expiry = Date.now() + 60 * 60 * 1000; // 1 hora
       await dbRun(
         'UPDATE usuarios SET reset_token = ?, reset_token_expiry = ? WHERE id = ?',
         [token, expiry, usuario.id]
@@ -122,6 +122,7 @@ router.post('/esqueci-senha', async (req, res) => {
     console.error('Erro ao gerar reset de senha:', err);
   }
 
+  // Sempre retorna sucesso porque não envia realmente o e-mail
   return renderView(null, 'E-mail enviado! Verifique sua caixa de entrada.');
 });
 

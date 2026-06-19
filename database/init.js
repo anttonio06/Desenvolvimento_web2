@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const db = require('./db');
 
+// serialize() garante execução sequencial — sem isso o SQLite executa as queries em paralelo
 db.serialize(async () => {
   db.run(`
     CREATE TABLE IF NOT EXISTS usuarios (
@@ -48,6 +49,7 @@ db.serialize(async () => {
   db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_clientes_email ON clientes(email) WHERE email IS NOT NULL AND email != ''`, () => {});
   db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_clientes_telefone ON clientes(telefone) WHERE telefone IS NOT NULL AND telefone != ''`, () => {});
 
+  // SQLite não suporta IF NOT EXISTS em ALTER TABLE — callback vazio ignora o erro se a coluna já existir
   db.run(`ALTER TABLE servicos ADD COLUMN preco_pequeno REAL DEFAULT 0`, () => {});
   db.run(`ALTER TABLE servicos ADD COLUMN preco_medio REAL DEFAULT 0`, () => {});
   db.run(`ALTER TABLE servicos ADD COLUMN preco_grande REAL DEFAULT 0`, () => {});

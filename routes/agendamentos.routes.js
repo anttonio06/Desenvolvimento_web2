@@ -106,6 +106,7 @@ router.post('/agendamentos', verificarAutenticacao, async (req, res) => {
   if (data < hoje) return renderErro('A data do agendamento não pode ser no passado.');
 
   const data_hora = `${data} ${hora}:00`;
+  // Formato 'YYYY-MM-DD HH' para que o strftime agrupe qualquer minuto da mesma hora
   const slotHora = `${data} ${hora.split(':')[0]}`;
 
   try {
@@ -259,6 +260,7 @@ router.post('/agendamentos/:id/editar', verificarAutenticacao, async (req, res) 
       return renderErro('Horário lotado! Já existem 3 agendamentos nesse horário.');
     }
 
+    // SQLite não aceita arrays como parâmetro — monta os '?' dinamicamente para o IN
     const placeholdersServ = servicosIds.map(() => '?').join(',');
     const dupRow = await dbGet(
       `SELECT COUNT(*) AS count
